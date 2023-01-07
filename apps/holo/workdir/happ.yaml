@@ -1,0 +1,15 @@
+---
+manifest_version: "1"
+name: ludos
+description: ~
+roles:
+  - name: ludos
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../dnas/ludos/ludos.dna"
+      properties: ~
+      uuid: ~
+      version: ~
+      clone_limit: 0
