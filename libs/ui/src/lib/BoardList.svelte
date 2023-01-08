@@ -223,10 +223,10 @@
       <ReloadIcon spinning={loading}/>
     </div> -->
     <div class='top-bar'>
-        <div class='top-board-button' on:click={newBoard} title="New board">
-            <PlusIcon  />
+        <div class='top-board-button' on:click={newBoard} title="Add Realm">
+          <PlusIcon  />
         </div>
-        <div class='top-board-button' on:click={()=>{fileinput.click();}} title="Import board from JSON file">
+        <div class='top-board-button' on:click={()=>{fileinput.click();}} title="Import Realm from JSON file">
           <ImportIcon  />
           <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
         </div>

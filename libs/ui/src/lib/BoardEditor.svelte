@@ -83,7 +83,7 @@
     .board-editor {
       display: flex;
       background-color: #D4F3EE;
-      flex-basis: 270px;
+      flex-basis: 500px;
       margin: 20px;
       padding: 10px;
       box-shadow: 4px 5px 13px 0px rgba(0,0,0,0.38);

@@ -10,6 +10,8 @@
     "./package.json": "./package/package.json",
     "./Controller.svelte": "./package/Controller.svelte",
     "./Toolbar.svelte": "./package/Toolbar.svelte",
+    "./Collapsable.svelte": "./package/Collapsable.svelte",
+    "./Terminal.svelte": "./package/Terminal.svelte",
     "./BoardEditor.svelte": "./package/BoardEditor.svelte",
     "./AvatarEditor.svelte": "./package/AvatarEditor.svelte",
     ".": "./package/index.js",

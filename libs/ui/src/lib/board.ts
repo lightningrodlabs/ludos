@@ -120,7 +120,7 @@ export type Space = {
     initState(state)  {
       state.status = ""
       state.name = "untitled"
-      state.story = "background story yet to be written"
+      state.story = "backstory yet to be written"
       state.groups = [{id:UngroupedId, name:"group1"}]
       state.stickies = []
       state.voteTypes = []

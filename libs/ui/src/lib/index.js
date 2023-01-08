@@ -10,6 +10,8 @@ export { default as BoardPane } from './BoardPane.svelte';
 export { default as BoardList} from './BoardList.svelte';
 export { default as SpaceEditor} from './SpaceEditor.svelte';
 export { default as Toolbar } from './Toolbar.svelte';
+export { default as Collapsable } from './Collapsable.svelte';
+export { default as Terminal } from './Terminal.svelte';
 export { default as AvatarIcon } from './icons/AvatarIcon.svelte';
 export { default as CheckIcon } from './icons/CheckIcon.svelte';
 export { default as DownIcon } from './icons/DownIcon.svelte';

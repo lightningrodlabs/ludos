@@ -12,7 +12,9 @@
   import { cloneDeep, isEqual } from "lodash";
   import { Pane } from "./pane";
   import { UngroupedId, type Space } from "./board";
-  import { empty } from "svelte/internal";
+  import { empty, onMount } from "svelte/internal";
+  import Collapsable from "./Collapsable.svelte";
+  import Terminal from "./Terminal.svelte";
 
   const pane = new Pane();
 
@@ -37,16 +39,39 @@
   let dx = 0;
   let dy = 0;
 
+  let location={x:0,y:0}
+  let terminal
+
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
   $: stickies = $state ? $state.stickies : undefined;
   $: sortStickies = (stickies) => stickies;
+  $: currentSpace = findSpace(location.x, location.y ,stickies)
 
   $: sortedStickies = sortStickies(stickies);
   $: groupedStickies = groupStickies(stickies);
   $: totalStickies = stickies ? stickies.length : 0
   $: stickesCounts = countStickies(sortedStickies)
   $: rows = makeRows(stickies)
+
+  onMount(async () => {
+    if (currentSpace) {
+      terminal.addToScreen("")
+  		terminal.addToScreen(currentSpace.text)
+    }
+    terminal.focus()
+	});
+  const findSpace = (x, y, spaces) => {
+    let result: Space | undefined 
+    if (spaces) {
+      for (const space of spaces) {
+        if (space.x == x && space.y == y) {
+          return space
+        }
+      }
+    }
+    return result
+  }
 
   const makeRows = (stickes): Array<Array<Space>> => {
     minX = 1000;
@@ -122,6 +147,8 @@
   
   const createSpace = (text: string, _groupId: uuidv1, props) => {
     pane.addSpace(text, creatingInGroup, props, createX, createY)
+    location.x = createX
+    location.y = createY
     creatingInGroup = undefined
   }
 
@@ -135,91 +162,75 @@
     clearEdit();
   }
   
-  const editSpace = (id:uuidv1, text: string) => () => {
+  const editSpace = (id:uuidv1, text: string, x,y) => () => {
     editingSpaceId = id;
     editText = text;
-  };
-
-  const countVotes = (votes, type) => {
-    if (typeof votes[type] === 'undefined') {
-      return []
-    }
-    const agentKeys = Object.keys(votes[type]);
-    return agentKeys.reduce(
-      (total, agentKey) => total + (votes[type][agentKey] || 0),
-      0
-    );
-  };
-
-  const myVotes = (votes, type) => {
-    if (typeof votes[type] === 'undefined') {
-      return 0
-    }
-    return votes[type][tsStore.myAgentPubKey()] || 0;
+    location.x = x
+    location.y = y
   };
 
   const closeBoard = () => {
     tsStore.boardList.closeActiveBoard();
   };
 
-  const inGroup = (curGroupId, groupId) => {
-    return curGroupId === groupId || (curGroupId === 0 && !groupIds.includes(groupId))
+  const moveTo = (x,y) => {
+    const space = findSpace(x,y, stickies)
+    if (space) {
+      location.x = x
+      location.y = y
+      return space.text
+    }
+    return "Your way is blocked"
+   };
+
+  const doCommand = (command:string):string => {
+    switch(command) {
+      case "?":
+      case "help":
+        return "You can type the cardinal directions to move, or 'awaken' to wake from your dreaming and craft the space you are in for further dreaming"
+      case "awaken":
+        if (currentSpace) {
+          editSpace(currentSpace.id, currentSpace.text, currentSpace.x, currentSpace.y )
+          editingSpaceId = currentSpace.id;
+        }
+        return "you have awoken from the dreaming in "+$state.name
+      case "n": 
+      case "north":
+        return moveTo(location.x,location.y-1)
+      case "s": 
+      case "south":
+        return moveTo(location.x,location.y+1)
+      case "e":
+      case "east":
+        return moveTo(location.x-1,location.y)
+      case "w":
+      case "west":
+        return moveTo(location.x+1,location.y)
+      default: return `I don't understand "${command}"`
+    }    
   }
-  const groupWidth = (groupId) : string => {
-    const len = groups.length > 0 ? (stickesCounts[UngroupedId] > 0 ? groups.length : groups.length - 1) : 1
-    // TODO: maybe set width dynamically by number of cards in group...
-    if (len <= 4) {
-      return 100/len+"%"
-    }
-    if (len == 5) {
-      return "33%"
-    }
-    if (len == 6) {
-      return "33%"
-    }
-    if (len == 7) {
-      return "25%"
-    }
-    if (len == 8) {
-      return "25%"
-    }
-    if (len == 9) {
-      return "33%"
-    }
-    if (len == 10) {
-      return "25%"
-    }
-    return 'fit-content'
-  }
+
 </script>
 
 <div class="board">
-  <div class="close-board global-board-button" on:click={closeBoard} title="Close Board">
+  <div class="close-board global-board-button" on:click={closeBoard} title="Close Realm">
     <ExIcon />
   </div>
-  <div class="export-board global-board-button" on:click={() => pane.exportBoard($state)} title="Export Board">
+  <div class="export-board global-board-button" on:click={() => pane.exportBoard($state)} title="Export Realm">
     <ExportIcon />
   </div>
-  <div class="top-bar">
-    <h1>{$state.name}</h1>
-    {#if $state.groups.length == 0}
-      <div class="add-sticky" on:click={newSpace(UngroupedId, 0, 0)} style="margin-left:5px" title="New Space">
-        <PlusIcon />
-      </div>
-    {/if}
-  </div>
   {#if $state}
-    <div class="background">
-      {@html Marked.parse($state.story)}
+    <div class="top-bar">
+      <h2 style="margin-right:10px">{$state.name}</h2>
+      <Collapsable content={$state.story} title="Back Story"/>
     </div>
-
     <div class="grid">
       {#each rows as row, y}
         <div class="row">
           {#if row}
             {#each row as space, x}
               {#if space}
-                <div class="space filled" title={space.text}>
+                <div class="space filled {(location.x == x && location.y == y)?"pulsing":''}" title={space.text}>
                   <div class="space-button-row">
                     <div class="space-no-button"></div>
                     {#if rows[y-1] && rows[y-1][x]}
@@ -235,7 +246,7 @@
                     {:else}
                       <div class="space-no-button"></div>                    
                     {/if}
-                    <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text)}></div>                    
+                    <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text, space.x, space.y)}></div>                    
                     {#if !row[x+1]}
                       <div class="space-button space-button-new" on:click={newSpace(UngroupedId,space.x+1,space.y)}></div>                    
                     {:else}
@@ -285,6 +296,7 @@
       />
     {/if}
   {/if}
+  <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand}/>
 </div>
 
 <style>
@@ -303,6 +315,11 @@
   }
   .filled {
     background-color: lightgray;
+  }
+  .pulsing {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+  	transform: scale(1);
+    animation: pulse 2s infinite;
   }
   .space-button-row {
     display: flex;
@@ -354,84 +371,22 @@
   .export-board {
     right: 70px;
   }
-  .add-sticky, h2 {
-    display: inline-block;
+  @keyframes pulse {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
   }
-  .groups {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .group {
-    display: block;
-    min-width: 290px;
-  }
-  .group-title {
-    padding-left: 10px;
-    padding-right: 10px;
-    max-width: 270px;
-  }
-  .stickies {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .sticky {
-    background-color: #d4f3ee;
-    flex-basis: 200px;
-    height: 200px;
-    min-width: 250px;
-    margin: 10px;
-    padding: 10px;
-    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
-    font-size: 12px;
-    line-height: 16px;
-    color: #000000;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .sticky-content {
-    overflow-y: auto;
-    max-width: 300px;
-  }
-  .add-sticky :global(svg) {
-    margin-right: 6px;
-    height: 30px;
-    width: 30px;
-  }
-  .votes {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin-top: auto;
-  }
-  .vote {
-    display: flex;
-    align-items: center;
-    background: white;
-    border-radius: 5px;
-    flex-basis: 26px;
-    height: 25px;
-    padding: 0 5px;
-    border: 1px solid white;
-    position: relative;
-    cursor: pointer;
-  }
-  .voted {
-    border-color: black;
-  }
-  .vote-counts {
-    padding-top: 2px;
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    left: -3px;
-    justify-content: flex-start;
-  }
-  .vote-count {
-    border-radius: 50px;
-    width: 5px;
-    height: 5px;
-    background-color: black;
-    margin-bottom: 2px;
-  }
+
+  
 </style>

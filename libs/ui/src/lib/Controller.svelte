@@ -2,24 +2,12 @@
     import BoardList from './BoardList.svelte'
     import Toolbar from './Toolbar.svelte'
     import BoardPane from './BoardPane.svelte'
+    import Collapsable from './Collapsable.svelte'
     import { LudosStore } from './ludosStore'
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
     import { BoardType } from './board';
-    import { Marked, Renderer } from "@ts-stack/markdown";
-
-    Marked.setOptions
-    ({
-      renderer: new Renderer,
-      gfm: true,
-      tables: true,
-      breaks: false,
-      pedantic: false,
-      sanitize: true,
-      smartLists: true,
-      smartypants: false
-    });
 
     export let boardType: BoardType = BoardType.Ludos
     export let roleName = ""
@@ -115,8 +103,17 @@
       return store
     }
     const background=`
-# Background
-The [players of ludos](http://fish.com) had a game they played that involved creating fictional realms...
+The [Players of Ludos](https://docs.google.com/document/d/1HBNgIooElD5widCuX9XmiOzbVIpEF5XXH67mZbnUFjo) had a game they played that involved creating fictional realms.
+These realms were crafted by the players who took turns writing new spaces one-by-one and adding them to the previous ones creating a kind of map, that other players
+could then wander through and read, almost as novel.
+
+The players considered their play, like our living, a kind of dreaming.  And so when they were crafting new games they felt themselves to be awake.
+
+So, here, dear players, we offer you the chance to join into this long lost game-form. To shift between the dreaming and the waking. Add a new realm below, and observe how an empty space is created.  Click on the yellow
+square to edit the description of the space.  You can type in the terminal to begin your dreaming, or if you are clicky type person who remains awake and crafting, then click on a green squares to add an adjacent space.  
+Soon you will have crafte an entire realm to share!
+
+May your collective imaginations flourish and your dreams be of delight to you...
 `
   </script>
   
@@ -148,9 +145,6 @@ The [players of ludos](http://fish.com) had a game they played that involved cre
       border: solid 3px black;
       border-radius: 10px;
     }
-    .background {
-      background-color: rgb(206, 234, 239);
-    }
   </style>
   
   <svelte:head>
@@ -160,9 +154,7 @@ The [players of ludos](http://fish.com) had a game they played that involved cre
   <div class='app'>
     {#if tsStore}
       <Toolbar boardType={boardType}/>
-      <div class="background">
-        {@html Marked.parse(background)}
-      </div>
+      <Collapsable content={background} title={"Background"} />
       {#if boardList}
       <BoardList boardType={boardType}/>
       {:else}
