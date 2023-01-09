@@ -235,7 +235,7 @@ const dream = (state) =>{
   </div>
   {#if $state}
     <div class="top-bar">
-      <h2 style="margin-right:10px">{$state.name}</h2>
+      <h2 style="margin-right:10px">{$state.name}</h2><a href="#" class="button" on:click={()=>dream(true)}>Dream Now</a>
     </div>
     <div class="grid">
       {#each rows as row, y}
@@ -315,7 +315,7 @@ const dream = (state) =>{
     </div>
   {:else}
     <div id="dreaming-preview" transition:fade>
-      Dreaming preview: <a href="#" class="button" on:click={()=>dream(true)}>Dream Now</a>
+      Dreaming preview: 
       <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={false} fontSize={"14px"} maxWidth={"400px"} maxHeight={"200px"}/>
     </div>
   {/if}
@@ -325,6 +325,7 @@ const dream = (state) =>{
 <style>
   .top-bar {
     display: flex;
+    align-items: center;
   }
   .grid {
     display: flex;
@@ -407,6 +408,7 @@ const dream = (state) =>{
     }
   }
   #dreaming-preview {
+    margin-top: 20px;
     max-width: 400px;
     max-height: 200px;
   }
@@ -423,6 +425,7 @@ const dream = (state) =>{
   background-color:#4eb5f1;
   text-align:center;
   transition: all 0.2s;
+  height: fit-content;
   }
   a.button:hover{
   background-color:#4095c6;
