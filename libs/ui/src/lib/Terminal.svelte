@@ -1,12 +1,22 @@
 <script type="ts">
   import { onMount } from "svelte";
+  export let fontSize = '20px';
+  export let maxHeight = '100%';
+  export let maxWidth = '100%';
+	$: cssVarStyles = `--font-size:${fontSize};--max-h:${maxHeight};--max-w:${maxWidth};`;
+
   export let welcome = "Welcome to the Realms of Ludos"
   export let doCommand = (command:string):string => {
     return `"${command}"" not implmented`
   }
+  export const setFullscreen = (state) => {
+    fullscreen = state
+  }
+  export let fullscreen = false
 
   onMount(async () => {
 		addToScreen(welcome)
+    focus()
 	});
   export const addToScreen = (text:string) => {
     screen.innerHTML+= text+"\n"
@@ -25,7 +35,7 @@
   let PROMPT = ">"
 </script>
 
-<div class="term">
+<div class="term {fullscreen?"fullscreen crt":''}" style="{cssVarStyles}">
   <pre bind:this={screen} class="text screen"></pre>
   <div class="cmd">
     <span class="text">{PROMPT}</span>&nbsp;
@@ -33,25 +43,40 @@
   </div>
 </div>
 
-
 <style>
+
+.fullscreen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(51,51,51,0.7);
+    z-index: 10;
+}
 .term {
   background-color:black;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--max-w, 100%);
+  max-height: var(--max-h, 100%);
 }
 .screen {
-  height: 400px;
   overflow-y: auto;
+  white-space: pre-wrap;
+  flex-grow: 1;
 }
 .cmd {
   display: flex;
 }
 .cmd-input {
+  outline: none;
   flex-grow: 1;
 }
 .text {
   color: green;
   font-family: Courier New;
-  font-size: 20px;
+  font-size: var(--font-size, 20px);
   text-shadow: 0px 0px 10px green, 0px 0px 5px green;
   -webkit-font-smoothing: none;
 }
@@ -155,35 +180,5 @@ input {
   }
 }
 
-.output {
- background-color: transparent;
- color:rgb(50,255,0);
- font-family:"VT323",monospace;
- border: none;
- height:650px;
- width: 1200px;
- outline: none;
- box-shadow: none;
- padding: 0;
- letter-spacing: .1em;
- font-size: 24px;
- -webkit-font-smoothing: none;
- line-height: 1.2;
-}
 
-.command {
- background-color: transparent;
- color:rgb(50,255,0);
- font-family:"VT323",monospace;
- border: none;
- width: 90%;
- outline: none;
- box-shadow: none;
- padding: 0;
- letter-spacing: .1em;
- font-size: 24px;
- -webkit-font-smoothing: none;
- line-height: 1.2;
- 
-}
 </style>

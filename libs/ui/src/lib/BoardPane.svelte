@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getContext } from "svelte";
+  import { fade } from 'svelte/transition';
   import SpaceEditor from "./SpaceEditor.svelte";
   import PlusIcon from "./icons/PlusIcon.svelte";
   import ExIcon from "./icons/ExIcon.svelte";
@@ -41,6 +42,7 @@
 
   let location={x:0,y:0}
   let terminal
+  let dreaming = false
 
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
@@ -56,6 +58,8 @@
 
   onMount(async () => {
     if (currentSpace) {
+      terminal.addToScreen("")
+      terminal.addToScreen($state.story)
       terminal.addToScreen("")
   		terminal.addToScreen(currentSpace.text)
     }
@@ -187,13 +191,21 @@
     switch(command) {
       case "?":
       case "help":
-        return "You can type the cardinal directions to move, or 'awaken' to wake from your dreaming and craft the space you are in for further dreaming"
+        return "You can type the cardinal directions to move around\nType 'look' to see what's in the space\nType 'story' to remember the backstory of this realm\nType 'awaken' to wake from your dreaming\n"
+      case "story":
+        return $state.story
+      case "look":
+        return currentSpace.text
+      case "hack":
+        return `You are at: ${location.x},${location.y}\nSpace details: ${JSON.stringify(currentSpace)}`
       case "awaken":
-        if (currentSpace) {
-          editSpace(currentSpace.id, currentSpace.text, currentSpace.x, currentSpace.y )
-          editingSpaceId = currentSpace.id;
-        }
+      case "wake":
+      case "wakeup":
+        dream(false)
         return "you have awoken from the dreaming in "+$state.name
+      case "dream":
+        dream(true)
+        return "you slip into dreaming about the realm of "+$state.name
       case "n": 
       case "north":
         return moveTo(location.x,location.y-1)
@@ -202,14 +214,16 @@
         return moveTo(location.x,location.y+1)
       case "e":
       case "east":
-        return moveTo(location.x-1,location.y)
+        return moveTo(location.x+1,location.y)
       case "w":
       case "west":
-        return moveTo(location.x+1,location.y)
+        return moveTo(location.x-1,location.y)
       default: return `I don't understand "${command}"`
     }    
   }
-
+const dream = (state) =>{
+  dreaming = state
+}
 </script>
 
 <div class="board">
@@ -222,7 +236,6 @@
   {#if $state}
     <div class="top-bar">
       <h2 style="margin-right:10px">{$state.name}</h2>
-      <Collapsable content={$state.story} title="Back Story"/>
     </div>
     <div class="grid">
       {#each rows as row, y}
@@ -230,7 +243,7 @@
           {#if row}
             {#each row as space, x}
               {#if space}
-                <div class="space filled {(location.x == x && location.y == y)?"pulsing":''}" title={space.text}>
+                <div class="space filled {(location.x == space.x && location.y == space.y)?"pulsing":''}" title={space.text}>
                   <div class="space-button-row">
                     <div class="space-no-button"></div>
                     {#if rows[y-1] && rows[y-1][x]}
@@ -296,10 +309,23 @@
       />
     {/if}
   {/if}
-  <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand}/>
+  {#if dreaming}
+    <div  transition:fade>
+      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={true}/>
+    </div>
+  {:else}
+    <div id="dreaming-preview" transition:fade>
+      Dreaming preview: <a href="#" class="button" on:click={()=>dream(true)}>Dream Now</a>
+      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={false} fontSize={"14px"} maxWidth={"400px"} maxHeight={"200px"}/>
+    </div>
+  {/if}
+
 </div>
 
 <style>
+  .top-bar {
+    display: flex;
+  }
   .grid {
     display: flex;
     flex-direction: column;
@@ -352,13 +378,6 @@
     padding: 30px 60px;
     background-color: white;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
-    border-radius: 3px;
-    flex: 1;
-  }
-  .top-bar {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
   }
   .global-board-button {
     position: absolute;
@@ -387,6 +406,31 @@
       box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
     }
   }
-
-  
+  #dreaming-preview {
+    max-width: 400px;
+    max-height: 200px;
+  }
+  a.button{
+  display:inline-block;
+  padding:0.3em 1.2em;
+  margin:0 0.3em 0.3em 0;
+  border-radius:2em;
+  box-sizing: border-box;
+  text-decoration:none;
+  font-family:'Roboto',sans-serif;
+  font-weight:300;
+  color:#FFFFFF;
+  background-color:#4eb5f1;
+  text-align:center;
+  transition: all 0.2s;
+  }
+  a.button:hover{
+  background-color:#4095c6;
+  }
+  @media all and (max-width:30em){
+    a.button{
+    display:block;
+    margin:0.2em auto;
+    }
+  }
 </style>
