@@ -42,10 +42,10 @@
 
 <div class='board-editor'>
   <div class="edit-title">
-    Name: <input class='textarea input' bind:value={text} />
+    Name: <input class='textarea input' bind:value={text} bind:this={titleElement} />
   </div>
   <div class="edit-story">
-    Background Story: <textarea class='storyarea input' bind:value={story} bind:this={titleElement}  />
+    Background Story: <textarea class='storyarea input' bind:value={story} />
   </div>
   <div class='controls'>
     {#if handleDelete}
@@ -81,7 +81,7 @@
     border-radius: 3px;
     width: 100%;
     font-weight: normal;
-
+    padding: 5px;
   }
   .storyarea {
     background-color: rgba(255, 255, 255, 0.72);
@@ -91,7 +91,7 @@
     width: 100%;
     height: 200px;
     font-weight: normal;
-
+    padding: 5px;
   }
   .controls {
     display: flex;
