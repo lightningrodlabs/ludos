@@ -2,20 +2,17 @@
   import { getContext } from "svelte";
   import { fade } from 'svelte/transition';
   import SpaceEditor from "./SpaceEditor.svelte";
-  import PlusIcon from "./icons/PlusIcon.svelte";
-  import ExIcon from "./icons/ExIcon.svelte";
-  import ExportIcon from "./icons/ExportIcon.svelte";
-  import EmojiIcon from "./icons/EmojiIcon.svelte";
   import type { v1 as uuidv1 } from "uuid";
-  import { sortBy } from "lodash/fp";
   import type { LudosStore } from "./ludosStore";
   import { Marked, Renderer } from "@ts-stack/markdown";
-  import { cloneDeep, isEqual } from "lodash";
   import { Pane } from "./pane";
-  import { UngroupedId, type Space } from "./board";
-  import { empty, onMount } from "svelte/internal";
-  import Collapsable from "./Collapsable.svelte";
+  import { BoardType, type Space } from "./board";
+  import { onMount } from "svelte/internal";
   import Terminal from "./Terminal.svelte";
+  import { Button, Icon } from "svelte-materialify";
+  import { mdiCloseBoxOutline, mdiCog, mdiExport } from "@mdi/js";
+  import EditBoardDialog from "./EditBoardDialog.svelte";
+  import { cloneDeep } from "lodash";
 
   const pane = new Pane();
 
@@ -46,15 +43,10 @@
 
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
-  $: stickies = $state ? $state.stickies : undefined;
-  $: sortStickies = (stickies) => stickies;
-  $: currentSpace = findSpace(location.x, location.y ,stickies)
+  $: spaces = $state ? $state.spaces : undefined;
+  $: currentSpace = findSpace(location.x, location.y ,spaces)
 
-  $: sortedStickies = sortStickies(stickies);
-  $: groupedStickies = groupStickies(stickies);
-  $: totalStickies = stickies ? stickies.length : 0
-  $: stickesCounts = countStickies(sortedStickies)
-  $: rows = makeRows(stickies)
+  $: rows = makeRows(spaces)
 
   onMount(async () => {
     if (currentSpace) {
@@ -77,92 +69,68 @@
     return result
   }
 
-  const makeRows = (stickes): Array<Array<Space>> => {
+  const makeRows = (spaces): Array<Array<Space>> => {
     minX = 1000;
     minY = 1000;
     maxX = -1000;
     maxY = -1000;
     dx = 0;
     dy = 0;
-    stickies.forEach((sticky: Space) => {
-      if (sticky.y < minY) {
-        minY = sticky.y
+    spaces.forEach((space: Space) => {
+      if (space.y < minY) {
+        minY = space.y
       }
-      if (sticky.x < minX) {
-        minX = sticky.x
+      if (space.x < minX) {
+        minX = space.x
       }
-      if (sticky.y > maxY) {
-        maxY = sticky.y
+      if (space.y > maxY) {
+        maxY = space.y
       }
-      if (sticky.x > maxX) {
-        maxX = sticky.x
+      if (space.x > maxX) {
+        maxX = space.x
       }
     })
     dx = maxX - minX + 1
     dy = maxY - minY + 1
     const rows:Array<Array<Space>> = []
-    stickies.forEach((sticky: Space) => {
-      const y = sticky.y - minY
-      const x = sticky.x - minX
+      spaces.forEach((space: Space) => {
+      const y = space.y - minY
+      const x = space.x - minX
       if (rows[y]===undefined) {
         rows[y]=[]
       }
-      rows[y][x] = sticky
+      rows[y][x] = space
     })
     console.log("ROWS",rows)
     return rows
   }
-  let creatingInGroup: uuidv1 | undefined = undefined;
   let createX = 0;
   let createY = 0;
   let editText = "";
   let editingSpaceId: uuidv1
+  let creatingSpace = false
 
-  let groupIds = []
-  let groups = []
-  let ungroupedStickies = 0
+  const newSpace = (x:number, y:number) => () => {
+      creatingSpace = true
 
-  const countStickies = (stickies) : {} => {
-    let counts = {}
-    stickies.forEach((sticky: Space) => {
-      counts[sticky.group] = counts[sticky.group] != undefined ? counts[sticky.group]+1 : 1
-    })
-    return counts
-  }
-    
-  const groupStickies = (stickies) => {
-    ungroupedStickies = 0
-    if ($state) {
-      groups = cloneDeep($state.groups);
-      groupIds = groups.map(c => c.id)
-
-      stickies.forEach((sticky) => {
-        if (!groupIds.includes(sticky.group)) ungroupedStickies += 1
-      });
-      groups.unshift({id:UngroupedId, name:""})
-    }
-  };
-
-  const newSpace = (group: uuidv1, x:number, y:number) => () => {
       createX = x
       createY = y
-      creatingInGroup = group;
   };
   
-  const createSpace = (text: string, _groupId: uuidv1, props) => {
-    pane.addSpace(text, creatingInGroup, props, createX, createY)
+  const createSpace = (text: string, props) => {
+    pane.addSpace(text, props, createX, createY)
     location.x = createX
     location.y = createY
-    creatingInGroup = undefined
+    creatingSpace = false
   }
 
   const clearEdit = () => {
+    creatingSpace = false
     editingSpaceId = null;
     editText = "";
   };
 
   const cancelEdit = () => {
-    creatingInGroup = undefined;
     clearEdit();
   }
   
@@ -178,7 +146,7 @@
   };
 
   const moveTo = (x,y) => {
-    const space = findSpace(x,y, stickies)
+    const space = findSpace(x,y, spaces)
     if (space) {
       location.x = x
       location.y = y
@@ -224,18 +192,34 @@
 const dream = (state) =>{
   dreaming = state
 }
+let editing = false
+
 </script>
 
 <div class="board">
-  <div class="close-board global-board-button" on:click={closeBoard} title="Close Realm">
-    <ExIcon />
-  </div>
-  <div class="export-board global-board-button" on:click={() => pane.exportBoard($state)} title="Export Realm">
-    <ExportIcon />
-  </div>
+  {#if editing}
+    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)} boardType={BoardType.Ludos}></EditBoardDialog>
+  {/if}
+
   {#if $state}
     <div class="top-bar">
-      <h2 style="margin-right:10px">{$state.name}</h2><a href="#" class="button" on:click={()=>dream(true)}>Dream Now</a>
+      <div class="left-items">
+        <h5>{$state.name}</h5>
+        <Button on:click={()=>dream(true)} title="Enter the dreaming..." style="margin-left:20px;">
+          Dream Now
+        </Button>
+      </div>
+      <div class="right-items">
+        <Button size=small icon on:click={()=>editing=true} title="Settings">
+          <Icon path={mdiCog} />
+        </Button>
+        <Button size=small icon on:click={() => pane.exportBoard($state)} title="Export">
+          <Icon path={mdiExport} />
+        </Button>
+        <Button size=small icon on:click={closeBoard} title="Close">
+          <Icon path={mdiCloseBoxOutline} />
+        </Button>
+      </div>
     </div>
     <div class="grid">
       {#each rows as row, y}
@@ -249,19 +233,19 @@ const dream = (state) =>{
                     {#if rows[y-1] && rows[y-1][x]}
                       <div class="space-no-button"></div>                    
                     {:else}
-                      <div class="space-button space-button-new" on:click={newSpace(UngroupedId,space.x,space.y-1)}></div>
+                      <div class="space-button space-button-new" on:click={newSpace(space.x,space.y-1)}></div>
                     {/if}
                     <div class="space-no-button"></div>                    
                   </div>
                   <div class="space-button-row">
                     {#if !row[x-1]}
-                      <div class="space-button space-button-new" on:click={newSpace(UngroupedId,space.x-1,space.y)}></div>                    
+                      <div class="space-button space-button-new" on:click={newSpace(space.x-1,space.y)}></div>                    
                     {:else}
                       <div class="space-no-button"></div>                    
                     {/if}
                     <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text, space.x, space.y)}></div>                    
                     {#if !row[x+1]}
-                      <div class="space-button space-button-new" on:click={newSpace(UngroupedId,space.x+1,space.y)}></div>                    
+                      <div class="space-button space-button-new" on:click={newSpace(space.x+1,space.y)}></div>                    
                     {:else}
                       <div class="space-no-button"></div>                    
                     {/if}
@@ -271,7 +255,7 @@ const dream = (state) =>{
                     {#if rows[y+1] && rows[y+1][x]}
                       <div class="space-no-button"></div>                    
                     {:else}
-                      <div class="space-button space-button-new" on:click={newSpace(UngroupedId,space.x,space.y+1)}></div>
+                      <div class="space-button space-button-new" on:click={newSpace(space.x,space.y+1)}></div>
                     {/if}
                     <div class="space-no-button"></div>                    
                   </div>
@@ -290,21 +274,26 @@ const dream = (state) =>{
         </div>
       {/each}
     </div>
-    {#if creatingInGroup !==undefined}
-    <SpaceEditor handleSave={createSpace} {cancelEdit} groups={groups} />
+    {#if creatingSpace}
+    <SpaceEditor handleSave={createSpace} {cancelEdit} bind:active={creatingSpace} x={createX} y={createY} />
     {/if}
     {#if editingSpaceId }
       <SpaceEditor
-        handleSave={
-          pane.updateSpace(stickies, editingSpaceId, clearEdit)
+        x={location.x}
+        y={location.y}
+        bind:active={editingSpaceId}
+        handleSave={() => {
+          pane.updateSpace(spaces, editingSpaceId, clearEdit)
+          editingSpaceId = undefined
+          }
         }
-        handleDelete={
+        handleDelete={ () => {
           pane.deleteSpace(editingSpaceId, clearEdit)
+          editingSpaceId = undefined
+          }
         }
         {cancelEdit}
         text={editText}
-        groupId={UngroupedId}
-        groups={groups}
         props={{}}
       />
     {/if}
@@ -316,20 +305,37 @@ const dream = (state) =>{
   {:else}
     <div id="dreaming-preview" transition:fade>
       Dreaming preview: 
-      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={false} fontSize={"14px"} maxWidth={"400px"} maxHeight={"200px"}/>
+      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={false} fontSize={"14px"} maxHeight={"200px"}/>
     </div>
   {/if}
 
 </div>
 
 <style>
+
   .top-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white;
+    border-bottom: 2px solid #bbb;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 3px 3px 0 0;
+  }
+  .left-items {
+    display: flex;
+    align-items: center;
+  }
+  .right-items {
     display: flex;
     align-items: center;
   }
   .grid {
     display: flex;
     flex-direction: column;
+    margin: auto;
   }
   .row {
     display: flex;
@@ -376,21 +382,14 @@ const dream = (state) =>{
     display: flex;
     flex-direction: column;
     min-height: 500px;
-    padding: 30px 60px;
-    background-color: white;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+    background-color: #f0f0f0;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
   }
-  .global-board-button {
-    position: absolute;
-    margin-top: -18px;
-    cursor: pointer;
-  }
-  .close-board {
-    right: 45px;
-  }
-  .export-board {
-    right: 70px;
-  }
+
   @keyframes pulse {
     0% {
       transform: scale(0.95);
@@ -409,31 +408,6 @@ const dream = (state) =>{
   }
   #dreaming-preview {
     margin-top: 20px;
-    max-width: 400px;
-    max-height: 200px;
   }
-  a.button{
-  display:inline-block;
-  padding:0.3em 1.2em;
-  margin:0 0.3em 0.3em 0;
-  border-radius:2em;
-  box-sizing: border-box;
-  text-decoration:none;
-  font-family:'Roboto',sans-serif;
-  font-weight:300;
-  color:#FFFFFF;
-  background-color:#4eb5f1;
-  text-align:center;
-  transition: all 0.2s;
-  height: fit-content;
-  }
-  a.button:hover{
-  background-color:#4095c6;
-  }
-  @media all and (max-width:30em){
-    a.button{
-    display:block;
-    margin:0.2em auto;
-    }
-  }
+
 </style>

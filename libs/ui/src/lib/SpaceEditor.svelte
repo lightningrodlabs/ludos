@@ -1,46 +1,66 @@
 <script>
-  import ExIcon from './icons/ExIcon.svelte'
-  import TrashIcon from './icons/TrashIcon.svelte'
-  import CheckIcon from './icons/CheckIcon.svelte'
-  import cloneDeep from "lodash"
+  import { onMount } from 'svelte';
+  import { Button, Dialog } from "svelte-materialify"
 
+  export let active = false
   export let handleSave
   export let handleDelete = undefined
   export let cancelEdit
   export let text = ''
-  export let groupId = undefined
-  export let groups = []
   export let props = {}
   export let x = 0
   export let y = 0
-  const colors=["#D4F3EE","#E0D7FF","#FFCCE1","#D7EEFF", "#FAFFC7", "red", "green", "yellow", "LightSkyBlue", "grey"]
   const setColor = (color) => {
     // TODO fix later when there are more properties
     props = {color}
   }
-  // let text = textA
+  let inputElement
+  onMount(() => inputElement.focus())
+  const handleKeydown = (e) => {
+    if (e.key === "Escape") {
+      active=false
+    } else if (e.key === "Enter" && e.ctrlKey) {
+      handleSave(text, props, x, y)
+    }
+  }
 </script>
+<svelte:window on:keydown={handleKeydown}/>
+
+<Dialog persistent bind:active width={600}>
+<div class='space-editor' style:background-color={props.color}>
+  <div>x:{x} y:{y}</div>
+  <div class="space-elements">
+  <textarea class='textarea' bind:value={text} bind:this={inputElement}/>
+
+  </div>
+  <div class='controls'>
+    {#if handleDelete}
+      <Button text size="x-small" on:click={handleDelete} class="red white-text">
+        Delete
+      </Button>
+    {/if}
+    <Button style="margin-left:5px" size="x-small" on:click={cancelEdit}>
+      Cancel
+    </Button>
+    <Button style="margin-left:5px" size="x-small" class="primary-color" on:click={() => handleSave(text, props, x, y) }>
+      Save
+    </Button>
+  </div>
+</div>
+</Dialog>
 
 <style>
-  .sticky-editor {
+  .space-editor {
     display: flex;
-    background-color: #D4F3EE;
-    flex-basis: 270px;
     height: 500px;
-    width: 550px;
     margin: 10px;
     padding: 10px;
-    box-shadow: 4px 5px 13px 0px rgba(0,0,0,0.38);
-    font-style: normal;
-    font-weight: 600;
     font-size: 12px;
-    line-height: 16px;
-    color: #000000;
-    justify-content: space-between;
-  }
-  .sticky-elements {
-    display: flex;
     flex-direction: column;
+  }
+  .space-elements {
+    display: flex;
+    flex-direction: row;
     flex-basis: 100%;
   }
   .textarea {
@@ -50,33 +70,15 @@
     border-radius: 3px;
     width: 100%;
     height: 100%;
+    font-weight: normal;
+    padding: 2px;
   }
   .controls {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-left: 7px;
     padding-top: 5px;
   }
 </style>
-
-<div class='sticky-editor' style:background-color={props.color}>
-  <div class="sticky-elements">
-  <textarea class='textarea' bind:value={text} />
-
-  </div>
-  <div class='controls'>
-    <div on:click={cancelEdit}>
-      <ExIcon />
-    </div>
-    <div on:click={() => handleSave(text, groupId, props, x, y)}>
-      <CheckIcon />
-    </div>
-    {#if handleDelete}
-      <div on:click={handleDelete} style="width:20px">
-        <TrashIcon />
-      </div>
-    {/if}
-  </div>
-</div>

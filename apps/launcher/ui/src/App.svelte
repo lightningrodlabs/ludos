@@ -1,10 +1,11 @@
 <script lang="ts">
   import {Controller, BoardType} from '@holo-host/boardz'
+  import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
+
   const appId = process.env.SVELTE_APP_APP_ID ? process.env.SVELTE_APP_APP_ID : 'ludos'
   const roleName = 'ludos'
   const appPort = process.env.SVELTE_APP_APP_PORT ? process.env.SVELTE_APP_APP_PORT : 8888
   const adminPort = process.env.SVELTE_APP_ADMIN_PORT
-  import { AppAgentWebsocket, AppWebsocket, AdminWebsocket } from '@holochain/client';
   const url = `ws://localhost:${appPort}`;
 
   let client: AppAgentWebsocket  
@@ -23,8 +24,7 @@
       await adminWebsocket.authorizeSigningCredentials(cellIds[0])
     }
     console.log("appPort and Id is", appPort, appId)
-    const appWebsocket = await AppWebsocket.connect(url);
-    client = await AppAgentWebsocket.connect(appWebsocket, appId)
+    client = await AppAgentWebsocket.connect(url, appId)
 
     connected = true
   }

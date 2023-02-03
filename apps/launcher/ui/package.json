@@ -18,9 +18,9 @@
   },
   "dependencies": {
     "@holo-host/boardz": "0.8.0",
-    "@holochain/client": "0.11.16",
+    "@holochain/client": "0.12.0",
     "@holochain-open-dev/utils": "0.9.3",
-    "@holochain-syn/core": "0.3.0-alpha.6",
+    "@holochain-syn/core": "0.3.0-alpha.7",
     "@ts-stack/markdown": "^1.4.0",
     "lodash": "^4.17.21",
     "sirv-cli": "^1.0.0",

@@ -26,8 +26,6 @@ export type Space = {
     y: number
     z: number
     text: string;
-    group: uuidv1;
-    votes: Object;
     props: Object;
   };
   
@@ -36,9 +34,7 @@ export type Space = {
     status: string;
     name: string;
     story: string;
-    groups: Group[];
-    stickies: Space[];
-    voteTypes: VoteType[];
+    spaces: Space[];
   }
   
   export type BoardDelta =
@@ -51,7 +47,7 @@ export type Space = {
       status: string;
       }
     | {
-        type: "add-sticky";
+        type: "add-space";
         value: Space;
       }
     | {
@@ -62,51 +58,18 @@ export type Space = {
         type: "set-story";
         story: string;
       }
-    | {
-        type: "set-groups";
-        groups: Group[];
-      }
-    | {
-        type: "set-vote-types";
-        voteTypes: VoteType[];
-      }
-    | {
-        type: "add-group";
-        group: Group;
-      }
-    | {
-        type: "delete-group";
-        id: number;
-      }
-    | {
-        type: "set-group-index";
-        id: uuidv1;
-        index: number;
-      }
-    | {
-        type: "update-sticky-group";
-        id: uuidv1;
-        group: uuidv1;
-      }
       | {
-        type: "update-sticky-props";
+        type: "update-space-props";
         id: uuidv1;
         props: Object;
       }
    | {
-        type: "update-sticky-text";
+        type: "update-space-text";
         id: uuidv1;
         text: string;
       }
     | {
-        type: "update-sticky-votes";
-        id: uuidv1;
-        voteType: string;
-        voter: AgentPubKeyB64;
-        count: number
-      }
-    | {
-        type: "delete-sticky";
+        type: "delete-space";
         id: string;
       };
   
@@ -120,9 +83,7 @@ export type Space = {
       state.status = ""
       state.name = "untitled"
       state.story = "backstory yet to be written"
-      state.groups = [{id:UngroupedId, name:"group1"}]
-      state.stickies = []
-      state.voteTypes = []
+      state.spaces = []
     },
     applyDelta( 
       delta: BoardDelta,
@@ -143,66 +104,26 @@ export type Space = {
       if (delta.type == "set-story") {
         state.story = delta.story
       }
-      if (delta.type == "set-groups") {
-        state.groups = delta.groups
+      else if (delta.type == "add-space") {
+        state.spaces.push(delta.value)
       }
-      if (delta.type == "add-group") {  
-        state.groups.push(delta.group)
-      }
-      if (delta.type == "delete-group") {
-        const index = state.groups.findIndex((group) => group.id === delta.id)
-        if (index >= 0) {
-          state.groups.splice(index,1)
-        }
-      }
-      if (delta.type == "set-group-index") {
-        const index = state.groups.findIndex((group) => group.id === delta.id)
-        if (index >= 0) {
-          const c = state.groups[index]
-          state.groups.splice(index,1)
-          state.groups.splice(index, 0, c)
-        }
-      }
-      if (delta.type == "set-vote-types") {
-        state.voteTypes = delta.voteTypes
-      }
-      else if (delta.type == "add-sticky") {
-        state.stickies.push(delta.value)
-      }
-      else if (delta.type == "update-sticky-text") {
-        state.stickies.forEach((sticky, i) => {
-          if (sticky.id === delta.id) {
-            state.stickies[i].text = delta.text;
+      else if (delta.type == "update-space-text") {
+        state.spaces.forEach((space, i) => {
+          if (space.id === delta.id) {
+            state.spaces[i].text = delta.text;
           }
         });
       }
-      else if (delta.type == "update-sticky-group") {
-        state.stickies.forEach((sticky, i) => {
-          if (sticky.id === delta.id) {
-            state.stickies[i].group = delta.group;
+      else if (delta.type == "update-space-props") {
+        state.spaces.forEach((space, i) => {
+          if (space.id === delta.id) {
+            state.spaces[i].props = delta.props;
           }
         });
       }
-      else if (delta.type == "update-sticky-props") {
-        state.stickies.forEach((sticky, i) => {
-          if (sticky.id === delta.id) {
-            state.stickies[i].props = delta.props;
-          }
-        });
-      }
-      else if (delta.type == "update-sticky-votes") {
-        state.stickies.forEach((sticky, i) => {
-          if (sticky.id === delta.id) {
-            if (!state.stickies[i].votes[delta.voteType]) {
-              state.stickies[i].votes[delta.voteType] = {}
-            }
-            state.stickies[i].votes[delta.voteType][delta.voter] = delta.count;
-          }
-        });
-      }
-      else if (delta.type == "delete-sticky") {
-        const index = state.stickies.findIndex((sticky) => sticky.id === delta.id)
-        state.stickies.splice(index,1)
+      else if (delta.type == "delete-space") {
+        const index = state.spaces.findIndex((space) => space.id === delta.id)
+        state.spaces.splice(index,1)
       }
     },
   };
@@ -244,13 +165,5 @@ export class Board {
     }
     async commitChanges() {
         this.workspace.commitChanges()
-    }
-}
-
-export const UngroupedId = ""
-export class Group {
-    id: uuidv1
-    constructor(public name: string) {
-        this.id =  uuidv1()
     }
 }

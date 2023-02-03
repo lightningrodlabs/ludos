@@ -62,7 +62,6 @@ export const boardListGrammar: BoardListGrammar = {
     initState(state)  {
         state.avatars = {}
         state.boards = []
-        console.log("INITIALIZING TO:", state)
     },
     applyDelta( 
         delta: BoardListDelta,
@@ -266,25 +265,13 @@ export class BoardList {
                     story: options.story
                 })
             }
-            if (options.groups) {
-                changes.push({
-                    type: "set-groups",
-                    groups: options.groups
-                })
-            }
-            if (options.stickies) {
-                options.stickies.forEach((sticky)=>{
+            if (options.spaces) {
+                options.spaces.forEach((space)=>{
                     changes.push({
-                        type: "add-sticky",
-                        value: sticky
+                        type: "add-space",
+                        value: space
                     })
                         
-                })
-            }
-            if (options.voteTypes) {
-                changes.push({
-                    type: "set-vote-types",
-                    voteTypes: options.voteTypes
                 })
             }
             if (changes.length > 0) {

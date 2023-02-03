@@ -1,29 +1,59 @@
 <script type="ts">
-  import { BoardType } from "./board";
+  import type { BoardType } from "./board";
   import TSLogoIcon from "./icons/TSLogoIcon.svelte";
-  export let boardType : BoardType = BoardType.Ludos
+  import Folk from "./Folk.svelte";
+  import { Icon, Button } from 'svelte-materialify';
+  import { mdiBug } from '@mdi/js';
+  import BoardMenu from "./BoardMenu.svelte";
+
+  export let boardType: BoardType
 
 </script>
+
+<div class='toolbar'>
+  <div class="left-items">
+    <div class="logo"><TSLogoIcon /></div><h4 class="logo-text">Realms of Ludos</h4>
+    <BoardMenu boardType={boardType}></BoardMenu>
+  </div>
+  <div class="right-items">
+    <Folk></Folk>
+    <Button icon title="Report a problem in our GitHub repo" on:click={()=>window.open("https://github.com/lightningrodlabs/ludos/issues", '_blank')}>
+      <Icon path={mdiBug} style={"color: #3672b9"} />
+    </Button>
+  </div>
+</div>
+
 
 <style>
   .toolbar {
     display: flex;
     align-items: center;
-    height: 70px;
+    justify-content: space-between;
+    background-color: white;
+    padding-left: 19px;
+    padding-right: 10px;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #222;
   }
   .logo {
     width: 40px;
     margin-right: 10px;
     display: contents;
+    cursor: pointer;
   }
   .logo-text {
     padding-bottom: 5px;
     margin-left: 15px;
   }
+  .right-items {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+  .left-items {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
 </style>
-
-<div class='toolbar'>
-  {#if boardType === BoardType.Ludos}
-    <div class="logo"><TSLogoIcon /></div><h1 class="logo-text">Realms of Ludos</h1>
-  {/if}
-</div>
