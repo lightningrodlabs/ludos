@@ -3,11 +3,7 @@ import { get } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, type decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 
-export const DEFAULT_STICKIE_VOTE_TYPES = [
-    {type: "1", emoji: "🗨", toolTip: "I want to talk about this one.", maxVotes: 3},
-    {type: "2", emoji: "⭐", toolTip: "Interesting!", maxVotes: 1},
-    {type: "3", emoji: "❓", toolTip: "I have questions about this topic.", maxVotes: 1},
-]
+
 
 export const enum BoardType {
   Ludos = 'Ludos',

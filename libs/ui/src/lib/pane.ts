@@ -2,7 +2,6 @@ import { createEventDispatcher } from "svelte";
 import type { BoardState } from "./board";
 import { v1 as uuidv1 } from "uuid";
 import { cloneDeep, isEqual } from "lodash";
-import type { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
 
 const download = (filename: string, text: string) => {
     var element = document.createElement('a');
@@ -40,7 +39,7 @@ export class Pane {
         this.dispatch("requestChange", [{ type: "add-space", value: space }]);
     };
 
-    updateSpace = (spaces, id: uuidv1, closeFn) => (text:string, groupId: uuidv1, props:any) => {
+    updateSpace = (spaces, id: uuidv1, closeFn) => (text:string, props:any) => {
         const space = spaces.find((space) => space.id === id);
         if (!space) {
           console.error("Failed to find item with id", id);

@@ -9,7 +9,7 @@
   import { BoardType, type Space } from "./board";
   import { onMount } from "svelte/internal";
   import Terminal from "./Terminal.svelte";
-  import { Button, Icon } from "svelte-materialify";
+  import { Button, Icon, Tooltip } from "svelte-materialify";
   import { mdiCloseBoxOutline, mdiCog, mdiExport } from "@mdi/js";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import { cloneDeep } from "lodash";
@@ -126,7 +126,7 @@
 
   const clearEdit = () => {
     creatingSpace = false
-    editingSpaceId = null;
+    editingSpaceId = undefined    
     editText = "";
   };
 
@@ -227,39 +227,42 @@ let editing = false
           {#if row}
             {#each row as space, x}
               {#if space}
-                <div class="space filled {(location.x == space.x && location.y == space.y)?"pulsing":''}" title={space.text}>
-                  <div class="space-button-row">
-                    <div class="space-no-button"></div>
-                    {#if rows[y-1] && rows[y-1][x]}
+                <Tooltip bottom>
+                  <div class="space filled {(location.x == space.x && location.y == space.y)?"pulsing":''}">
+                    <div class="space-button-row">
+                      <div class="space-no-button"></div>
+                      {#if rows[y-1] && rows[y-1][x]}
+                        <div class="space-no-button"></div>                    
+                      {:else}
+                        <div class="space-button space-button-new" on:click={newSpace(space.x,space.y-1)}></div>
+                      {/if}
                       <div class="space-no-button"></div>                    
-                    {:else}
-                      <div class="space-button space-button-new" on:click={newSpace(space.x,space.y-1)}></div>
-                    {/if}
-                    <div class="space-no-button"></div>                    
+                    </div>
+                    <div class="space-button-row">
+                      {#if !row[x-1]}
+                        <div class="space-button space-button-new" on:click={newSpace(space.x-1,space.y)}></div>                    
+                      {:else}
+                        <div class="space-no-button"></div>                    
+                      {/if}
+                      <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text, space.x, space.y)}></div>                    
+                      {#if !row[x+1]}
+                        <div class="space-button space-button-new" on:click={newSpace(space.x+1,space.y)}></div>                    
+                      {:else}
+                        <div class="space-no-button"></div>                    
+                      {/if}
+                    </div>
+                    <div class="space-button-row">
+                      <div class="space-no-button"></div>                    
+                      {#if rows[y+1] && rows[y+1][x]}
+                        <div class="space-no-button"></div>                    
+                      {:else}
+                        <div class="space-button space-button-new" on:click={newSpace(space.x,space.y+1)}></div>
+                      {/if}
+                      <div class="space-no-button"></div>                    
+                    </div>
                   </div>
-                  <div class="space-button-row">
-                    {#if !row[x-1]}
-                      <div class="space-button space-button-new" on:click={newSpace(space.x-1,space.y)}></div>                    
-                    {:else}
-                      <div class="space-no-button"></div>                    
-                    {/if}
-                    <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text, space.x, space.y)}></div>                    
-                    {#if !row[x+1]}
-                      <div class="space-button space-button-new" on:click={newSpace(space.x+1,space.y)}></div>                    
-                    {:else}
-                      <div class="space-no-button"></div>                    
-                    {/if}
-                  </div>
-                  <div class="space-button-row">
-                    <div class="space-no-button"></div>                    
-                    {#if rows[y+1] && rows[y+1][x]}
-                      <div class="space-no-button"></div>                    
-                    {:else}
-                      <div class="space-button space-button-new" on:click={newSpace(space.x,space.y+1)}></div>
-                    {/if}
-                    <div class="space-no-button"></div>                    
-                  </div>
-                </div>
+                  <span slot="tip">x:{x} y:{y}, space: {(space.text.length <= 100) ?  space.text :  space.text.slice(0, 100) + '...'}</span>
+                </Tooltip>
               {:else}
                 <div class="space"></div>
               {/if}
@@ -282,15 +285,11 @@ let editing = false
         x={location.x}
         y={location.y}
         bind:active={editingSpaceId}
-        handleSave={() => {
+        handleSave={
           pane.updateSpace(spaces, editingSpaceId, clearEdit)
-          editingSpaceId = undefined
-          }
         }
-        handleDelete={ () => {
+        handleDelete={
           pane.deleteSpace(editingSpaceId, clearEdit)
-          editingSpaceId = undefined
-          }
         }
         {cancelEdit}
         text={editText}
