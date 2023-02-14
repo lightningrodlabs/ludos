@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {Controller, BoardType} from '@holo-host/boardz'
+  import {Controller} from '@holo-host/boardz'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
 
   const appId = process.env.SVELTE_APP_APP_ID ? process.env.SVELTE_APP_APP_ID : 'ludos'
@@ -39,7 +39,7 @@
 <svelte:head>
 </svelte:head>
 {#if connected}
-  <Controller client={client} boardType={BoardType.Ludos} roleName={roleName}></Controller>
+  <Controller client={client} roleName={roleName}></Controller>
 {:else}
   Loading
 {/if}

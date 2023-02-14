@@ -4,14 +4,16 @@ import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, type decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import type { Dictionary } from "@holochain-open-dev/core-types";
 
-export const enum BoardType {
-  Ludos = 'Ludos',
-}
-
 export type Location = {
   x: number
   y: number
   z: number
+}
+
+export const enum Topology {
+  Plane = 'Plane',
+  Rhyzome = 'Rhyzome',
+  Line = 'Line',
 }
 
 export class Connection {
@@ -30,7 +32,7 @@ export type Space = {
 };
   
 export interface BoardState {
-  type: BoardType;
+  topology: Topology
   status: string;
   name: string;
   story: string;
@@ -40,8 +42,8 @@ export interface BoardState {
 
 export type BoardDelta =
   | {
-    type: "set-type";
-    boardType: BoardType;
+    type: "set-topology";
+    topology: Topology;
     }
   | {
     type: "set-status";
@@ -107,8 +109,8 @@ export const boardGrammar: BoardGrammar = {
     _author: AgentPubKey
   ) {
 
-    if (delta.type == "set-type") {
-      state.type = delta.boardType
+    if (delta.type == "set-topology") {
+      state.topology = delta.topology
     }      
     if (delta.type == "set-status") {
       state.status = delta.status

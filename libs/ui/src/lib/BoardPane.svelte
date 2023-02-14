@@ -6,16 +6,14 @@
   import { v1 as uuidv1 } from "uuid";
   import type { LudosStore } from "./ludosStore";
   import { Marked, Renderer } from "@ts-stack/markdown";
-  import { Pane } from "./pane";
-  import { BoardType, Connection, type Space } from "./board";
+  import { Connection, Topology, type BoardState, type Space } from "./board";
   import { onMount } from "svelte/internal";
   import Terminal from "./Terminal.svelte";
   import { Button, Icon, Tooltip } from "svelte-materialify";
   import { mdiCloseBoxOutline, mdiCog, mdiExport } from "@mdi/js";
   import EditBoardDialog from "./EditBoardDialog.svelte";
-  import { cloneDeep } from "lodash";
-
-  const pane = new Pane();
+  import { cloneDeep, isEqual } from "lodash";
+  import { createEventDispatcher } from "svelte";
 
   Marked.setOptions
   ({
@@ -35,6 +33,7 @@
   let location={x:0,y:0}
   let terminal
   let dreaming = false
+  let dispatch = createEventDispatcher()
 
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
@@ -52,6 +51,25 @@
     }
     terminal.focus()
 	});
+  const exportBoard = (state: BoardState) => {
+        const fileName = `ts_${state.name}.json`
+        download(fileName, JSON.stringify(state))
+        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
+    }
+    
+  const download = (filename: string, text: string) => {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
   const findSpace = (x, y, spaces) => {
     let result: Space | undefined 
     if (spaces) {
@@ -73,10 +91,21 @@
   let editingSpaceId: uuidv1
   let creatingSpace = false
 
+  const makeConnections = (from: Space, to: Space) => {
+    const fromConn = new Connection(from.id, to.id, `this space leads to ${to.name}`)
+    const toConn = new Connection(to.id, from.id, `this space leads to ${from.name}`)
+    dispatch("requestChange", [{ type: "add-connection", connection: fromConn}, { type: "add-connection", connection: toConn}]);
+  }
+
   const connect = (from: uuidv1, x:number, y:number) => {
     const space = findSpace(x,y, spaces)
     if (space) {
-      editSpace(space.id)
+      const conn = Object.values(connections).find(c=>c.from == from && c.to == space.id)
+      if (conn === undefined) {
+        makeConnections(spaces[from], space)
+      } else {
+        editSpace(space.id)
+      }
     } else {
       creatingSpace = true
       createX = x
@@ -93,11 +122,9 @@
           text,
           props,
         };
-    pane.dispatch("requestChange", [{ type: "add-space", value: space }]);
+    dispatch("requestChange", [{ type: "add-space", value: space }]);
 
-    const from = new Connection(createFrom, space.id, `this space leads to ${name}`)
-    const to = new Connection(space.id, createFrom, `this space leads to ${spaces[createFrom].name}`)
-    pane.dispatch("requestChange", [{ type: "add-connection", connection: from}, { type: "add-connection", connection: to}]);
+    makeConnections(spaces[createFrom],space)
     location.x = createX
     location.y = createY
     creatingSpace = false
@@ -182,12 +209,37 @@ const dream = (state) =>{
   dreaming = state
 }
 let editing = false
-
+const deleteSpace = () => {
+    this.dispatch("requestChange", [{ type: "delete-space", editingSpaceId }]);
+    cancelEdit()
+}
+const updateSpace = (name:string, text:string, props:any) => {
+    const space = spaces[editingSpaceId];
+    if (!space) {
+      console.error("Failed to find item with id", editingSpaceId);
+    } else {
+      let changes = []
+      if (space.name != name) {
+        changes.push({ type: "update-space-name", id: space.id, text: text })
+      }
+      if (space.text != text) {
+        changes.push({ type: "update-space-text", id: space.id, text: text })
+      }
+      console.log("space.props", space.props, "props", props)
+      if (!isEqual(space.props, props)) {
+        changes.push({ type: "update-space-props", id: space.id, props: cloneDeep(props)})
+      }
+      if (changes.length > 0) {
+      this.dispatch("requestChange", changes);
+      }
+    }
+    cancelEdit()
+};
 </script>
 
 <div class="board">
   {#if editing}
-    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)} boardType={BoardType.Ludos}></EditBoardDialog>
+    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)} topology={$state.topology}></EditBoardDialog>
   {/if}
 
   {#if $state}
@@ -202,7 +254,7 @@ let editing = false
         <Button size=small icon on:click={()=>editing=true} title="Settings">
           <Icon path={mdiCog} />
         </Button>
-        <Button size=small icon on:click={() => pane.exportBoard($state)} title="Export">
+        <Button size=small icon on:click={() => exportBoard($state)} title="Export">
           <Icon path={mdiExport} />
         </Button>
         <Button size=small icon on:click={closeBoard} title="Close">
@@ -210,7 +262,7 @@ let editing = false
         </Button> 
       </div>
     </div>
-    <Map spaces={spaces} connections={connections} connect={connect} edit={editSpace}></Map>
+    <Map topology={$state.topology} spaces={spaces} connections={connections} connect={connect} edit={editSpace}></Map>
   
     {#if creatingSpace}
     <SpaceEditor spaces={spaces} handleSave={createSpace} {cancelEdit} bind:active={creatingSpace} x={createX} y={createY}
@@ -222,12 +274,8 @@ let editing = false
         x={location.x}
         y={location.y}
         bind:active={editingSpaceId}
-        handleSave={
-          pane.updateSpace(spaces, editingSpaceId, clearEdit)
-        }
-        handleDelete={
-          pane.deleteSpace(editingSpaceId, clearEdit)
-        }
+        handleSave={updateSpace}
+        handleDelete={deleteSpace}
         {cancelEdit}
         name={editName}
         text={editText}
@@ -269,52 +317,6 @@ let editing = false
   .right-items {
     display: flex;
     align-items: center;
-  }
-  .grid {
-    display: flex;
-    flex-direction: column;
-    margin: auto;
-  }
-  .row {
-    display: flex;
-    flex-direction: row;
-  }
-  .space {
-    display: inline-block;
-    margin: 1px;
-    min-width: 30px;
-  }
-  .filled {
-    background-color: lightgray;
-  }
-  .pulsing {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
-  	transform: scale(1);
-    animation: pulse 2s infinite;
-  }
-  .space-button-row {
-    display: flex;
-    flex-direction: row;
-    height: 10px;
-  }
-  .space-button {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 0;
-  }
-  .space-button-new {
-    background-color: green;
-  }
-  .space-button-edit {
-    background-color: yellow;
-  }
-
-  .space-no-button {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 0;
   }
   .board {
     display: flex;

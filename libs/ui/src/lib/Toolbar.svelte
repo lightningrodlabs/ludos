@@ -1,19 +1,16 @@
 <script type="ts">
-  import type { BoardType } from "./board";
   import TSLogoIcon from "./icons/TSLogoIcon.svelte";
   import Folk from "./Folk.svelte";
   import { Icon, Button } from 'svelte-materialify';
   import { mdiBug } from '@mdi/js';
   import BoardMenu from "./BoardMenu.svelte";
 
-  export let boardType: BoardType
-
 </script>
 
 <div class='toolbar'>
   <div class="left-items">
     <div class="logo"><TSLogoIcon /></div><h4 class="logo-text">Realms of Ludos</h4>
-    <BoardMenu boardType={boardType}></BoardMenu>
+    <BoardMenu ></BoardMenu>
   </div>
   <div class="right-items">
     <Folk></Folk>

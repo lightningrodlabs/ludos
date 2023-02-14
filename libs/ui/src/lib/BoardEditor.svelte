@@ -1,21 +1,22 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { Button } from 'svelte-materialify';
-    import type { BoardType } from './board';
-  
+    import { onMount } from 'svelte';
+    import { Menu, Button, List, ListItem, Icon } from "svelte-materialify"
+    import { Topology } from './board';
+    import { mdiChevronDown } from '@mdi/js';
+
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
     export let text = ''
     export let story = ''
-    export let boardType: BoardType
+    export let topology: Topology| undefined
     let titleElement
 
     const handleKeydown = (e) => {
       if (e.key === "Escape") {
         cancelEdit()
       } else if (e.key === "Enter" && e.ctrlKey) {
-        handleSave(boardType, text, story)
+        handleSave(topology, text, story)
       } else  if (e.key === 'Tab') {
         // trap focus
         const tabbable = Array.from(document.querySelectorAll('.input'))
@@ -41,6 +42,27 @@
 <svelte:window on:keydown={handleKeydown}/>
 
 <div class='board-editor'>
+  {#if handleDelete === undefined}
+    <Menu>
+      <div slot="activator">
+          <Button style="margin-left:10px">
+              {#if topology}
+                  {topology}
+              {:else}
+                  <i>Choose a Topology</i>
+              {/if}
+              <Icon path={mdiChevronDown}></Icon>
+          </Button>
+      </div>
+      <List>
+          {#each [Topology.Plane, Topology.Rhyzome, Topology.Line] as topo }
+              <ListItem dense={true} on:click={()=>topology=topo}>{topo}</ListItem>
+          {/each}
+      </List>
+  </Menu>
+    {:else}
+    Topology: {topology}  
+    {/if}
   <div class="edit-title">
     Name: <input class='textarea input' bind:value={text} bind:this={titleElement} />
   </div>
@@ -56,7 +78,7 @@
     <Button on:click={cancelEdit} style="margin-left:10px" size="small">
       Cancel
     </Button>
-    <Button style="margin-left:10px" size="small" on:click={() => handleSave(boardType, text, story)} class="primary-color">
+    <Button disabled={topology === undefined || text == ""} style="margin-left:10px" size="small" on:click={() => handleSave(topology, text, story)} class="primary-color">
       Save
     </Button>
   </div>

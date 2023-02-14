@@ -3,14 +3,11 @@
     import { getContext } from "svelte";
     import type { LudosStore } from "./ludosStore";
     import type { EntryHashB64 } from '@holochain/client';
-    import type { BoardType } from './board';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
 
 
     let creating = false
-
-    export let boardType: BoardType
 
     const { getStore } :any = getContext('tsStore');
 
@@ -86,7 +83,7 @@
 {/if}
 
 {#if creating}
-    <NewBoardDialog boardType={boardType} bind:active={creating}></NewBoardDialog>
+    <NewBoardDialog bind:active={creating}></NewBoardDialog>
 {/if}
 </div>
 <style>

@@ -1,6 +1,6 @@
 import { RootStore, type Commit, type SynGrammar, type SynStore, type Workspace, type WorkspaceStore } from "@holochain-syn/core";
 import type { AgentPubKeyB64, Dictionary, EntryHashB64 } from "@holochain-open-dev/core-types";
-import { Board, BoardType, CommitTypeBoard } from "./board";
+import { Board, CommitTypeBoard, Topology } from "./board";
 import type { EntryHashMap, EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
@@ -110,7 +110,6 @@ export class BoardList {
     public workspace: WorkspaceStore<BoardListGrammar>
     public boards: Dictionary<Board>
     activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
-    activeBoardType: Writable<BoardType| undefined> = writable(undefined)
 
     constructor(public rootStore: RootStore<BoardListGrammar>, public boardsRootStore: RootStore<BoardGrammar>) {
         this.boards = {}
@@ -202,12 +201,10 @@ export class BoardList {
             board = await this.getBoard(hash)
             if (board) {
                 this.activeBoardHash.update((n) => {return hash} )
-                this.activeBoardType.update((n)=> {return board.state().type})
             }
         }
         if (!board) {
             this.activeBoardHash.update((n) => {return undefined} )
-            this.activeBoardType.update((n) => {return undefined} )
         }
     }
 
@@ -242,15 +239,15 @@ export class BoardList {
         const workspaceStore = board.workspace
         const boardHash = board.hashB64()
         this.boards[boardHash] = board 
-        if (options.type === undefined) {
-            options.type = BoardType.Ludos
+        if (options.topology === undefined) {
+            options.topology = Topology.Plane
         }
         if (options !== undefined) {
             let changes = []
-            if (options.type) {
+            if (options.topology) {
                 changes.push({
-                    type: "set-type",
-                    boardType: options.type
+                    type: "set-topology",
+                    topology: options.topology
                 })
             }
             if (options.name) {

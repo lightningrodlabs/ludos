@@ -1,12 +1,12 @@
 <script lang="ts">
     import { Dialog } from 'svelte-materialify';
-    import type { Board, BoardState, BoardType } from './board';
+    import type { Board, BoardState, Topology } from './board';
     import BoardEditor from './BoardEditor.svelte';
     import type { LudosStore } from "./ludosStore";
     import { getContext, onMount } from 'svelte';
     import type { EntryHashB64 } from '@holochain/client';
 
-    export let boardType
+    export let topology: Topology|undefined
     export let boardHash:EntryHashB64|undefined = undefined
     let editName = ''
     let editStory = ""
@@ -26,7 +26,7 @@
 
     const store:LudosStore = getStore();
 
-    const updateBoard = (hash: EntryHashB64) => async (_type:BoardType, name: string) => {
+    const updateBoard = (hash: EntryHashB64) => async (_topology:Topology, name: string) => {
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(hash)
         if (board) {
@@ -63,5 +63,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <BoardEditor handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} boardType={boardType} text={editName} story={editStory}/>
+    <BoardEditor handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} topology={topology} text={editName} story={editStory}/>
 </Dialog>

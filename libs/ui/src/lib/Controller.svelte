@@ -5,12 +5,10 @@
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
-    import { BoardType } from './board';
     import { MaterialApp, Icon } from 'svelte-materialify';
     import { mdiArchiveArrowUp, mdiCog, mdiShapeSquarePlus } from '@mdi/js';
     import { fade } from 'svelte/transition';
 
-    export let boardType: BoardType = BoardType.Ludos
     export let roleName = ""
 
     let synStore: SynStore;
@@ -19,7 +17,6 @@
     export let client : AppAgentClient
 
     $: activeBoardIndex = tsStore ? tsStore.boardList.activeBoardHash : undefined
-    $: activeBoardType = tsStore ? tsStore.boardList.activeBoardType : undefined
     $: boardList = tsStore ? tsStore.boardList.stateStore() : undefined
     $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
     $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
@@ -59,14 +56,19 @@
 <MaterialApp>
   <div class='app'>
     {#if tsStore}
-      <Toolbar boardType={boardType}/>
+      <Toolbar />
       <div class="transition-container">
       {#if boardList && $boardList.boards.length == 0}
         <div class="welcome-text" transition:fade>
           <p>
           The <a href="https://docs.google.com/document/d/1HBNgIooElD5widCuX9XmiOzbVIpEF5XXH67mZbnUFjo">Players of Ludos</a> had a game they played that involved creating fictional realms.
           These realms were crafted by the players who took turns writing new spaces one-by-one and adding them to the previous ones creating a kind of map, that other players
-          could then wander through and read, almost as novel.
+          could then wander through and read, almost as novel...
+          </p>
+          <p>
+            But the Players of Ludos were very concious that narrative forms construct particular realities, so part of their play involved conciously
+            choosing different narrative topologies for thier stories.  Some of them were linear, like most of our novels, but some of them spread
+            across a narrative plane that one could wander like a landspace, and others grew like roots into a the soil of story.
           </p>
           <p>
             The players considered their play, like our living, a kind of dreaming.  And so when they were crafting new games they felt themselves to be awake.
@@ -98,11 +100,9 @@
       {/if}
 
       {#if $activeBoardIndex !== undefined}
-        {#if $activeBoardType === BoardType.Ludos}
           <div transition:fade>
           <BoardPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardIndex,event.detail)}}/>
           </div>
-        {/if}
       {/if}
     </div>
     {:else}

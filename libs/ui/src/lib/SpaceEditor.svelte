@@ -14,13 +14,14 @@
   export let x = 0
   export let y = 0
   export let connections: Connection[] = []
+
   let inputElement
   onMount(() => inputElement.focus())
   const handleKeydown = (e) => {
     if (e.key === "Escape") {
       active=false
     } else if (e.key === "Enter" && e.ctrlKey) {
-      handleSave(text, props, x, y)
+      handleSave(name, text, props, x, y)
     }
   }
 </script>
@@ -28,7 +29,12 @@
 
 <Dialog persistent bind:active width={600}>
 <div class='space-editor'>
-  <div>x:{x} y:{y}</div>
+  <div>
+    
+    x:{x} 
+    y:{y}
+  </div>
+
   <div class="space-elements">
     Name: <input class='textinput' bind:value={name} bind:this={inputElement}/>
     Description: <textarea class='textinput' bind:value={text}/>
@@ -47,7 +53,7 @@
     <Button style="margin-left:5px" size="x-small" on:click={cancelEdit}>
       Cancel
     </Button>
-    <Button style="margin-left:5px" size="x-small" class="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
+    <Button style="margin-left:5px" size="x-small" BoardTypeclass="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
       Save
     </Button>
   </div>
