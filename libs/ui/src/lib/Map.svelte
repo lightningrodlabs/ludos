@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { type Space, type Connection, Topology } from "./board";
+  import { type Space, type Connection, Topology } from "./realm";
   import type { Dictionary } from "@holochain-open-dev/core-types";
   import type { v1 as uuidv1 } from "uuid";
-  import { isEqual } from "lodash";
 
   export let spaces: Dictionary<Space>
   export let connections: Dictionary<Connection>

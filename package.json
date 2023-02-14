@@ -16,10 +16,10 @@
     "start:ui": "npm run dev -w ludos-app",
     "start:ui:watch": "npm run dev:watch -w ludos-app",
     "start:happ": "echo \"starting hc instance: $APP_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$ADMIN_PORT --piped generate ./apps/launcher/workdir/ludos.happ --run=$APP_PORT -a ludos$APP_PORT network mdns",
-    "build": "npm run build -w \"@holo-host/boardz\" -w ludos-app",
+    "build": "npm run build -w \"@holo-host/realmz\" -w ludos-app",
     "build:applet": "npm run build -w we-applet",
     "package:applet": "npm run build:ui && npm run package -w we-applet",
-    "package:launcher": "npm run build -w \"@holo-host/boardz\" -w ludos-app && npm run package -w ludos-app && hc web-app pack ./apps/launcher/workdir",
+    "package:launcher": "npm run build -w \"@holo-host/realmz\" -w ludos-app && npm run package -w ludos-app && hc web-app pack ./apps/launcher/workdir",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check-env": "node -e 'console.log(process.env)' | grep npm",
     "playground": "run-singleton \"holochain-playground\""

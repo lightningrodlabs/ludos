@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {Controller} from '@holo-host/boardz'
+  import {Controller} from '@holo-host/realmz'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
 
   const appId = process.env.SVELTE_APP_APP_ID ? process.env.SVELTE_APP_APP_ID : 'ludos'

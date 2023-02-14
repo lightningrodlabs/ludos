@@ -3,14 +3,14 @@
   import Folk from "./Folk.svelte";
   import { Icon, Button } from 'svelte-materialify';
   import { mdiBug } from '@mdi/js';
-  import BoardMenu from "./BoardMenu.svelte";
+  import RealmMenu from "./RealmMenu.svelte";
 
 </script>
 
 <div class='toolbar'>
   <div class="left-items">
     <div class="logo"><TSLogoIcon /></div><h4 class="logo-text">Realms of Ludos</h4>
-    <BoardMenu ></BoardMenu>
+    <RealmMenu ></RealmMenu>
   </div>
   <div class="right-items">
     <Folk></Folk>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
-    import BoardPane from './BoardPane.svelte'
+    import RealmPane from './RealmPane.svelte'
     import { LudosStore } from './ludosStore'
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
@@ -16,10 +16,10 @@
     
     export let client : AppAgentClient
 
-    $: activeBoardIndex = tsStore ? tsStore.boardList.activeBoardHash : undefined
-    $: boardList = tsStore ? tsStore.boardList.stateStore() : undefined
-    $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
-    $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
+    $: activeRealmIndex = tsStore ? tsStore.realmList.activeRealmHash : undefined
+    $: realmList = tsStore ? tsStore.realmList.stateStore() : undefined
+    $: archivedRealms = realmList ? $realmList.realms.filter((realm)=>realm.status === "archived") : []
+    $: activeRealms = realmList ? $realmList.realms.filter((realm)=>realm.status !== "archived") : []
 
     initialize()
 
@@ -35,10 +35,10 @@
       const store = createStore()
       synStore = store.synStore;
       try {
-        await store.loadBoards()
+        await store.loadRealms()
         tsStore = store
       } catch (e) {
-        console.log("Error loading boards:", e)
+        console.log("Error loading realms:", e)
       }
     }
     function createStore() : LudosStore {
@@ -58,7 +58,7 @@
     {#if tsStore}
       <Toolbar />
       <div class="transition-container">
-      {#if boardList && $boardList.boards.length == 0}
+      {#if realmList && $realmList.realms.length == 0}
         <div class="welcome-text" transition:fade>
           <p>
           The <a href="https://docs.google.com/document/d/1HBNgIooElD5widCuX9XmiOzbVIpEF5XXH67mZbnUFjo">Players of Ludos</a> had a game they played that involved creating fictional realms.
@@ -87,9 +87,9 @@
           </p>
         </div>
       {/if}
-      {#if boardList && $boardList.boards.length > 0 && $activeBoardIndex === undefined}
+      {#if realmList && $realmList.realms.length > 0 && $activeRealmIndex === undefined}
         <div class="welcome-text" transition:fade>
-          <p>Active Realms: {activeBoards.length}, Archived Realms: {archivedBoards.length}</p>
+          <p>Active Realms: {activeRealms.length}, Archived Realms: {archivedRealms.length}</p>
             <p>
               Select a realm from the dropdown above, or add a new one with the  <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> button.
             </p>
@@ -99,9 +99,9 @@
         </div>
       {/if}
 
-      {#if $activeBoardIndex !== undefined}
+      {#if $activeRealmIndex !== undefined}
           <div transition:fade>
-          <BoardPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardIndex,event.detail)}}/>
+          <RealmPane on:requestChange={(event) => {tsStore.realmList.requestRealmChanges($activeRealmIndex,event.detail)}}/>
           </div>
       {/if}
     </div>

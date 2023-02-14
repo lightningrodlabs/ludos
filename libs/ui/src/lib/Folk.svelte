@@ -2,7 +2,7 @@
     import { Button, Icon } from 'svelte-materialify';
     import { mdiAccountGroup, mdiAccount } from '@mdi/js';
     import ParticipantsDialog from './ParticipantsDialog.svelte';
-    import type { Avatar } from './boardList';
+    import type { Avatar } from './realmList';
     import AvatarDialog from './AvatarDialog.svelte';
     import { getContext } from "svelte";
     import type { LudosStore } from "./ludosStore";
@@ -12,9 +12,9 @@
 
     const store:LudosStore = getStore();
     const myAgentPubKey = store.myAgentPubKey()
-    $: avatars = store.boardList.avatars()
+    $: avatars = store.realmList.avatars()
     $: myName = $avatars[myAgentPubKey]? $avatars[myAgentPubKey].name : ""
-    $: participants = store.boardList.participants()
+    $: participants = store.realmList.participants()
     let showParticipants = false
     let editingAvatar = false
     let avatar: Avatar = {name:"", url:""}
@@ -27,7 +27,7 @@
         editingAvatar = true
     }
     const setAvatar = (avatar: Avatar) => {
-        store.boardList.requestChanges([{type:'set-avatar', pubKey:store.myAgentPubKey(), avatar:cloneDeep(avatar)}])
+        store.realmList.requestChanges([{type:'set-avatar', pubKey:store.myAgentPubKey(), avatar:cloneDeep(avatar)}])
         editingAvatar = false
     }
 

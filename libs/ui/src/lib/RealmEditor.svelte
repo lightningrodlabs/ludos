@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { Menu, Button, List, ListItem, Icon } from "svelte-materialify"
-    import { Topology } from './board';
+    import { Topology } from './realm';
     import { mdiChevronDown } from '@mdi/js';
 
     export let handleSave
@@ -41,7 +41,7 @@
 
 <svelte:window on:keydown={handleKeydown}/>
 
-<div class='board-editor'>
+<div class='realm-editor'>
   {#if handleDelete === undefined}
     <Menu>
       <div slot="activator">
@@ -86,7 +86,7 @@
 
 
 <style>
-  .board-editor {
+  .realm-editor {
     display: flex;
     flex-basis: 270px;
     margin: 20px;

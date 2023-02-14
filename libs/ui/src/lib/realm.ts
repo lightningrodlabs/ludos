@@ -31,7 +31,7 @@ export type Space = {
     props: Object;
 };
   
-export interface BoardState {
+export interface RealmState {
   topology: Topology
   status: string;
   name: string;
@@ -40,7 +40,7 @@ export interface BoardState {
   connections: Dictionary<Connection>
 }
 
-export type BoardDelta =
+export type RealmDelta =
   | {
     type: "set-topology";
     topology: Topology;
@@ -89,12 +89,12 @@ export type BoardDelta =
       id: string;
     };
   
-export type BoardGrammar = SynGrammar<
-  BoardDelta,
-  BoardState
+export type RealmGrammar = SynGrammar<
+  RealmDelta,
+  RealmState
   >;
   
-export const boardGrammar: BoardGrammar = {
+export const realmGrammar: RealmGrammar = {
   initState(state)  {
     state.status = ""
     state.name = "untitled"
@@ -103,8 +103,8 @@ export const boardGrammar: BoardGrammar = {
     state.connections = {}
   },
   applyDelta( 
-    delta: BoardDelta,
-    state: BoardState,
+    delta: RealmDelta,
+    state: RealmState,
     _ephemeralState: any,
     _author: AgentPubKey
   ) {
@@ -152,18 +152,18 @@ export const boardGrammar: BoardGrammar = {
 };
 
 
-export const CommitTypeBoard :string = "board"
+export const CommitTypeRealm :string = "realm"
 
-export class Board {    
-    constructor(public workspace: WorkspaceStore<BoardGrammar>) {
+export class Realm {    
+    constructor(public workspace: WorkspaceStore<RealmGrammar>) {
     }
 
-    public static async Create(rootStore: RootStore<BoardGrammar>) {
+    public static async Create(rootStore: RootStore<RealmGrammar>) {
         const workspaceHash = await rootStore.createWorkspace(
             `${new Date}`,
             rootStore.root.entryHash
            );
-        const me = new Board(await rootStore.joinWorkspace(workspaceHash));
+        const me = new Realm(await rootStore.joinWorkspace(workspaceHash));
         return me
     }
 
@@ -176,10 +176,10 @@ export class Board {
     close() {
         this.workspace.leaveWorkspace()
     }
-    state(): BoardState {
+    state(): RealmState {
         return get(this.workspace.state)
     }
-    requestChanges(deltas: Array<BoardDelta>) {
+    requestChanges(deltas: Array<RealmDelta>) {
         console.log("REQUESTING BOARD CHANGES: ", deltas)
         this.workspace.requestChanges(deltas)
     }

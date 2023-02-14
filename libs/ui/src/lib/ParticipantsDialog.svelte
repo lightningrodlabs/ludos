@@ -7,7 +7,7 @@
 
   const { getStore } :any = getContext('tsStore');
   const store:LudosStore = getStore();
-  $: participants = store.boardList.participants()
+  $: participants = store.realmList.participants()
   $: activeFolk = $participants.active
 
   if (!customElements.get('holo-identicon')){

@@ -6,12 +6,12 @@
   import { v1 as uuidv1 } from "uuid";
   import type { LudosStore } from "./ludosStore";
   import { Marked, Renderer } from "@ts-stack/markdown";
-  import { Connection, Topology, type BoardState, type Space } from "./board";
+  import { Connection, Topology, type RealmState, type Space } from "./realm";
   import { onMount } from "svelte/internal";
   import Terminal from "./Terminal.svelte";
   import { Button, Icon, Tooltip } from "svelte-materialify";
   import { mdiCloseBoxOutline, mdiCog, mdiExport } from "@mdi/js";
-  import EditBoardDialog from "./EditBoardDialog.svelte";
+  import EditRealmDialog from "./EditRealmDialog.svelte";
   import { cloneDeep, isEqual } from "lodash";
   import { createEventDispatcher } from "svelte";
 
@@ -35,8 +35,8 @@
   let dreaming = false
   let dispatch = createEventDispatcher()
 
-  $: activeHash = tsStore.boardList.activeBoardHash;
-  $: state = tsStore.boardList.getReadableBoardState($activeHash);
+  $: activeHash = tsStore.realmList.activeRealmHash;
+  $: state = tsStore.realmList.getReadableRealmState($activeHash);
   $: spaces = $state ? $state.spaces : undefined;
   $: connections = $state ? $state.connections : undefined;
   $: currentSpace = findSpace(location.x, location.y ,spaces)
@@ -51,10 +51,10 @@
     }
     terminal.focus()
 	});
-  const exportBoard = (state: BoardState) => {
+  const exportRealm = (state: RealmState) => {
         const fileName = `ts_${state.name}.json`
         download(fileName, JSON.stringify(state))
-        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
+        alert(`Your realm was exported to your Downloads folder as: '${fileName}'`)
     }
     
   const download = (filename: string, text: string) => {
@@ -153,8 +153,8 @@
     }
   };
 
-  const closeBoard = () => {
-    tsStore.boardList.closeActiveBoard();
+  const closeRealm = () => {
+    tsStore.realmList.closeActiveRealm();
   };
 
   const moveTo = (x,y) => {
@@ -237,9 +237,9 @@ const updateSpace = (name:string, text:string, props:any) => {
 };
 </script>
 
-<div class="board">
+<div class="realm">
   {#if editing}
-    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)} topology={$state.topology}></EditBoardDialog>
+    <EditRealmDialog bind:active={editing} realmHash={cloneDeep($activeHash)} topology={$state.topology}></EditRealmDialog>
   {/if}
 
   {#if $state}
@@ -254,10 +254,10 @@ const updateSpace = (name:string, text:string, props:any) => {
         <Button size=small icon on:click={()=>editing=true} title="Settings">
           <Icon path={mdiCog} />
         </Button>
-        <Button size=small icon on:click={() => exportBoard($state)} title="Export">
+        <Button size=small icon on:click={() => exportRealm($state)} title="Export">
           <Icon path={mdiExport} />
         </Button>
-        <Button size=small icon on:click={closeBoard} title="Close">
+        <Button size=small icon on:click={closeRealm} title="Close">
           <Icon path={mdiCloseBoxOutline} />
         </Button> 
       </div>
@@ -318,7 +318,7 @@ const updateSpace = (name:string, text:string, props:any) => {
     display: flex;
     align-items: center;
   }
-  .board {
+  .realm {
     display: flex;
     flex-direction: column;
     min-height: 500px;

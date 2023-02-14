@@ -1,18 +1,18 @@
 <script lang="ts">
     import { Dialog } from 'svelte-materialify';
-    import BoardEditor from './BoardEditor.svelte';
+    import RealmEditor from './RealmEditor.svelte';
     import type { LudosStore } from "./ludosStore";
     import { getContext } from 'svelte';
     import { v1 as uuidv1 } from "uuid";
-    import type { Topology } from './board';
+    import type { Topology } from './realm';
 
     export let active = true
     const { getStore } :any = getContext('tsStore');
 
     const store:LudosStore = getStore();
 
-    const addBoard = async (topology: Topology, name: string, story: string) => {
-        const board = await store.boardList.makeBoard({topology, name, story, spaces:[
+    const addRealm = async (topology: Topology, name: string, story: string) => {
+        const realm = await store.realmList.makeRealm({topology, name, story, spaces:[
       {
           id: uuidv1(),
           location: {x: 0, y: 0, z:0},
@@ -21,11 +21,11 @@
           props: {},
         }
     ]})
-        store.boardList.setActiveBoard(board.hashB64())
+        store.realmList.setActiveRealm(realm.hashB64())
         active = false
     }
 
 </script>
 <Dialog persistent bind:active>
-    <BoardEditor handleSave={addBoard} cancelEdit={()=>active=false} />
+    <RealmEditor handleSave={addRealm} cancelEdit={()=>active=false} />
 </Dialog>

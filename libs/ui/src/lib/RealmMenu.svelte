@@ -3,7 +3,7 @@
     import { getContext } from "svelte";
     import type { LudosStore } from "./ludosStore";
     import type { EntryHashB64 } from '@holochain/client';
-    import NewBoardDialog from './NewBoardDialog.svelte';
+    import NewRealmDialog from './NewRealmDialog.svelte';
     import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
 
 
@@ -12,14 +12,14 @@
     const { getStore } :any = getContext('tsStore');
 
     const store:LudosStore = getStore();
-    $: boardList = store.boardList.stateStore()
-    $: activeHash = store.boardList.activeBoardHash;
-    $: state = store.boardList.getReadableBoardState($activeHash);
-    $: archivedBoards = $boardList.boards.findIndex((board)=>board.status === "archived") >= 0
-    $: activeBoards = $boardList.boards.findIndex((board)=>board.status !== "archived") >= 0
+    $: realmList = store.realmList.stateStore()
+    $: activeHash = store.realmList.activeRealmHash;
+    $: state = store.realmList.getReadableRealmState($activeHash);
+    $: archivedRealms = $realmList.realms.findIndex((realm)=>realm.status === "archived") >= 0
+    $: activeRealms = $realmList.realms.findIndex((realm)=>realm.status !== "archived") >= 0
 
-    const selectBoard = (hash: EntryHashB64) => {
-        store.boardList.setActiveBoard(hash)
+    const selectRealm = (hash: EntryHashB64) => {
+        store.realmList.setActiveRealm(hash)
     }
 
     let fileinput;
@@ -29,21 +29,21 @@
 
         reader.addEventListener("load", async () => {
         const b = JSON.parse(reader.result as string)
-        const board = await store.boardList.makeBoard(b)
-        selectBoard(board.hashB64())
+        const realm = await store.realmList.makeRealm(b)
+        selectRealm(realm.hashB64())
         }, false);
         reader.readAsText(file);
     };
-    const unarchiveBoard = (hash: EntryHashB64) => () => {
-        store.boardList.unarchiveBoard(hash)
+    const unarchiveRealm = (hash: EntryHashB64) => () => {
+        store.realmList.unarchiveRealm(hash)
     }
 </script>
 
-<div class="board-menu">
+<div class="realm-menu">
 <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
 <Button icon on:click={()=>creating = true} style="margin-left:10px" title="New Realm"><Icon path={mdiShapeSquarePlus} /></Button>
 <Button icon on:click={()=>{fileinput.click();}} style="margin-left:10px" title="Import Realm"><Icon path={mdiImport} /></Button>
-{#if activeBoards}
+{#if activeRealms}
 <Menu>
     <div slot="activator">
         <Button style="margin-left:10px">
@@ -56,15 +56,15 @@
         </Button>
     </div>
     <List>
-        {#each $boardList.boards as board }
-            {#if board.status !== "archived" }
-                <ListItem dense={true} on:click={()=>selectBoard(board.hash)}>{board.name}</ListItem>
+        {#each $realmList.realms as realm }
+            {#if realm.status !== "archived" }
+                <ListItem dense={true} on:click={()=>selectRealm(realm.hash)}>{realm.name}</ListItem>
             {/if}
         {/each}
     </List>
 </Menu>
 {/if}
-{#if archivedBoards}
+{#if archivedRealms}
 <Menu>
     <div slot="activator">
         <Button style="margin-left:10px" title="Archived Realms">
@@ -73,9 +73,9 @@
         </Button>
     </div>
     <List>
-        {#each $boardList.boards as board }
-            {#if board.status === "archived" }
-                <ListItem dense={true} on:click={unarchiveBoard(board.hash)}>{board.name}</ListItem>
+        {#each $realmList.realms as realm }
+            {#if realm.status === "archived" }
+                <ListItem dense={true} on:click={unarchiveRealm(realm.hash)}>{realm.name}</ListItem>
             {/if}
         {/each}
     </List>
@@ -83,11 +83,11 @@
 {/if}
 
 {#if creating}
-    <NewBoardDialog bind:active={creating}></NewBoardDialog>
+    <NewRealmDialog bind:active={creating}></NewRealmDialog>
 {/if}
 </div>
 <style>
-  .board-menu {
+  .realm-menu {
     display: flex;
     flex: 0 0 auto;
     align-items: center;

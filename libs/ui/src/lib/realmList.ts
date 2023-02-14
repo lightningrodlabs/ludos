@@ -1,14 +1,14 @@
 import { RootStore, type Commit, type SynGrammar, type SynStore, type Workspace, type WorkspaceStore } from "@holochain-syn/core";
 import type { AgentPubKeyB64, Dictionary, EntryHashB64 } from "@holochain-open-dev/core-types";
-import { Board, CommitTypeBoard, Topology } from "./board";
+import { Realm, CommitTypeRealm, Topology } from "./realm";
 import type { EntryHashMap, EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
-import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
+import { realmGrammar, type RealmDelta, type RealmGrammar, type RealmState } from "./realm";
 import { type AgentPubKey, type EntryHash, decodeHashFromBase64 } from "@holochain/client";
 
-export const CommitTypeBoardList :string = "board-list"
+export const CommitTypeRealmList :string = "realm-list"
 
-export interface BoardRecord {
+export interface RealmRecord {
     hash: EntryHashB64
     name: string
     status: string
@@ -19,15 +19,15 @@ export interface Avatar {
     url: string
 }
 
-export interface BoardListState {
+export interface RealmListState {
     avatars: Dictionary<Avatar>;
-    boards: BoardRecord[];
+    realms: RealmRecord[];
 }
 
 
-export type BoardListDelta =
+export type RealmListDelta =
   | {
-    type: "add-board";
+    type: "add-realm";
     hash: EntryHashB64;
     name: string;
     status?: string;
@@ -53,34 +53,34 @@ export type BoardListDelta =
     index: number;
   };
 
-export type BoardListGrammar = SynGrammar<
-BoardListDelta,
-BoardListState
+export type RealmListGrammar = SynGrammar<
+RealmListDelta,
+RealmListState
 >;
 
-export const boardListGrammar: BoardListGrammar = {
+export const realmListGrammar: RealmListGrammar = {
     initState(state)  {
         state.avatars = {}
-        state.boards = []
+        state.realms = []
     },
     applyDelta( 
-        delta: BoardListDelta,
-        state: BoardListState,
+        delta: RealmListDelta,
+        state: RealmListState,
         _ephemeralState: any,
         _author: AgentPubKey
       ) {
-        if (delta.type == "add-board") {
-            const record: BoardRecord = {
+        if (delta.type == "add-realm") {
+            const record: RealmRecord = {
                 name: delta.name,
                 hash: delta.hash,
                 status: delta.status,
             }
-            state.boards.unshift(record)
+            state.realms.unshift(record)
         }
         if (delta.type == "set-name") {
-            state.boards.forEach((board, i) => {
-                if (board.hash === delta.hash) {
-                  state.boards[i].name = delta.name;
+            state.realms.forEach((realm, i) => {
+                if (realm.hash === delta.hash) {
+                  state.realms[i].name = delta.name;
                 }
             });
         }
@@ -88,37 +88,37 @@ export const boardListGrammar: BoardListGrammar = {
             state.avatars[delta.pubKey] = delta.avatar
         }
         if (delta.type == "set-status") {
-            state.boards.forEach((board, i) => {
-                if (board.hash === delta.hash) {
-                  state.boards[i].status = delta.status;
+            state.realms.forEach((realm, i) => {
+                if (realm.hash === delta.hash) {
+                  state.realms[i].status = delta.status;
                 }
             });
         }
         if (delta.type == "set-index") {
-            const index = state.boards.findIndex((board) => board.hash == delta.hash)
+            const index = state.realms.findIndex((realm) => realm.hash == delta.hash)
             if (index >= 0) {
-              const c = state.boards[index]
-              state.boards.splice(index,1)
-              state.boards.splice(index, 0, c)
+              const c = state.realms[index]
+              state.realms.splice(index,1)
+              state.realms.splice(index, 0, c)
             }
           }
         }
     }
 
 
-export class BoardList {
-    public workspace: WorkspaceStore<BoardListGrammar>
-    public boards: Dictionary<Board>
-    activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
+export class RealmList {
+    public workspace: WorkspaceStore<RealmListGrammar>
+    public realms: Dictionary<Realm>
+    activeRealmHash: Writable<EntryHashB64| undefined> = writable(undefined)
 
-    constructor(public rootStore: RootStore<BoardListGrammar>, public boardsRootStore: RootStore<BoardGrammar>) {
-        this.boards = {}
+    constructor(public rootStore: RootStore<RealmListGrammar>, public realmsRootStore: RootStore<RealmGrammar>) {
+        this.realms = {}
     }
 
     public static async Create(synStore: SynStore) {
-        const rootStore = await synStore.createDeterministicRoot(boardListGrammar, {type: CommitTypeBoardList})
-        const boardsRootStore = await synStore.createDeterministicRoot(boardGrammar, {type: CommitTypeBoard})
-        const me = new BoardList(rootStore, boardsRootStore);
+        const rootStore = await synStore.createDeterministicRoot(realmListGrammar, {type: CommitTypeRealmList})
+        const realmsRootStore = await synStore.createDeterministicRoot(realmGrammar, {type: CommitTypeRealm})
+        const me = new RealmList(rootStore, realmsRootStore);
         const workspaceHash = await rootStore.createWorkspace(
             'main',
             rootStore.root.entryHash
@@ -126,18 +126,18 @@ export class BoardList {
         me.workspace = await rootStore.joinWorkspace(workspaceHash)
         return me
     }
-    public static async Join(synStore: SynStore, rootCommit: EntryRecord<Commit>, boardsRootCommit: EntryRecord<Commit>) {
+    public static async Join(synStore: SynStore, rootCommit: EntryRecord<Commit>, realmsRootCommit: EntryRecord<Commit>) {
         const rootStore = new RootStore(
             synStore.client,
-            boardListGrammar,
+            realmListGrammar,
             rootCommit
           );
-          const boardsRootStore = new RootStore(
+          const realmsRootStore = new RootStore(
             synStore.client,
-            boardGrammar,
-            boardsRootCommit
+            realmGrammar,
+            realmsRootCommit
           );
-        const me = new BoardList(rootStore, boardsRootStore);
+        const me = new RealmList(rootStore, realmsRootStore);
         const workspaces: EntryHashMap<Workspace> = get(await rootStore.fetchWorkspaces());
         // if there is no workspace then we have a problem!!
         me.workspace = await rootStore.joinWorkspace(workspaces.keys()[0]);
@@ -155,8 +155,8 @@ export class BoardList {
     state() {
         return get(this.workspace.state)
     }
-    requestChanges(deltas: Array<BoardListDelta>) {
-        console.log("REQUESTING BOARDLIST CHANGES: ", deltas)
+    requestChanges(deltas: Array<RealmListDelta>) {
+        console.log("REQUESTING REALMLIST CHANGES: ", deltas)
         this.workspace.requestChanges(deltas)
     }
     participants()  {
@@ -170,59 +170,59 @@ export class BoardList {
         this.workspace.commitChanges()
     }
 
-    async requestBoardChanges(hash: EntryHashB64, deltas: BoardDelta[]) {
-        const board = await this.getBoard(hash)
-        if (board) {
-            board.requestChanges(deltas)
+    async requestRealmChanges(hash: EntryHashB64, deltas: RealmDelta[]) {
+        const realm = await this.getRealm(hash)
+        if (realm) {
+            realm.requestChanges(deltas)
         }
     }
 
-    async requestAtiveBoardChanges(deltas: BoardDelta[]) {
-        this.requestBoardChanges(get(this.activeBoardHash), deltas)
+    async requestAtiveRealmChanges(deltas: RealmDelta[]) {
+        this.requestRealmChanges(get(this.activeRealmHash), deltas)
     }
 
-    getReadableBoardState(hash: EntryHashB64 | undefined) : Readable<BoardState> | undefined {
+    getReadableRealmState(hash: EntryHashB64 | undefined) : Readable<RealmState> | undefined {
         if (hash == undefined) return undefined
-        return this.boards[hash].workspace.state
+        return this.realms[hash].workspace.state
     }
     
-    async getBoard(hash: EntryHashB64) : Promise<Board | undefined> {
-        let board = this.boards[hash]
-        if (!board) {
+    async getRealm(hash: EntryHashB64) : Promise<Realm | undefined> {
+        let realm = this.realms[hash]
+        if (!realm) {
             const workspaceHash = decodeHashFromBase64(hash)
-            board = this.boards[hash] = new Board(await this.boardsRootStore.joinWorkspace(workspaceHash));
+            realm = this.realms[hash] = new Realm(await this.realmsRootStore.joinWorkspace(workspaceHash));
         }
-        return board
+        return realm
     }
 
-    async setActiveBoard(hash: EntryHashB64 | undefined) {
-        let board
+    async setActiveRealm(hash: EntryHashB64 | undefined) {
+        let realm
         if (hash) {
-            board = await this.getBoard(hash)
-            if (board) {
-                this.activeBoardHash.update((n) => {return hash} )
+            realm = await this.getRealm(hash)
+            if (realm) {
+                this.activeRealmHash.update((n) => {return hash} )
             }
         }
-        if (!board) {
-            this.activeBoardHash.update((n) => {return undefined} )
+        if (!realm) {
+            this.activeRealmHash.update((n) => {return undefined} )
         }
     }
 
-    async archiveBoard(hash: EntryHashB64) {
+    async archiveRealm(hash: EntryHashB64) {
         this.requestChanges([{type:"set-status", hash ,status:"archived"}])
-        // leave board and delete
-        const board: Board = this.boards[hash]
-        if (board) {
-            board.workspace.leaveWorkspace()
-            delete this.boards[hash]
+        // leave realm and delete
+        const realm: Realm = this.realms[hash]
+        if (realm) {
+            realm.workspace.leaveWorkspace()
+            delete this.realms[hash]
         }
-        if (get(this.activeBoardHash) == hash) {
-            this.setActiveBoard(undefined)
+        if (get(this.activeRealmHash) == hash) {
+            this.setActiveRealm(undefined)
         }
     }
 
-    async unarchiveBoard(hash: EntryHashB64) {
-        let changes : BoardListDelta[] = 
+    async unarchiveRealm(hash: EntryHashB64) {
+        let changes : RealmListDelta[] = 
         [
             {type:"set-status", hash ,status:""}
         ]
@@ -230,15 +230,15 @@ export class BoardList {
         this.requestChanges(changes)
     }
 
-    closeActiveBoard() {
-        this.setActiveBoard(undefined)
+    closeActiveRealm() {
+        this.setActiveRealm(undefined)
     }
 
-    async makeBoard(options: any, fromHash?: EntryHashB64) : Promise<Board> {
-        const board = await Board.Create(this.boardsRootStore)
-        const workspaceStore = board.workspace
-        const boardHash = board.hashB64()
-        this.boards[boardHash] = board 
+    async makeRealm(options: any, fromHash?: EntryHashB64) : Promise<Realm> {
+        const realm = await Realm.Create(this.realmsRootStore)
+        const workspaceStore = realm.workspace
+        const realmHash = realm.hashB64()
+        this.realms[realmHash] = realm 
         if (options.topology === undefined) {
             options.topology = Topology.Plane
         }
@@ -277,13 +277,13 @@ export class BoardList {
             }
 
             this.requestChanges([{
-                type: 'add-board',
-                name: board.state().name,
-                hash: boardHash,
+                type: 'add-realm',
+                name: realm.state().name,
+                hash: realmHash,
                 status: ""
             }])
         
         }
-        return board
+        return realm
     }
 }

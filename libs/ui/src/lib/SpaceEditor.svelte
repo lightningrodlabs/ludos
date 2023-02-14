@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Button, Dialog } from "svelte-materialify"
-  import type { Connection } from './board';
+  import type { Connection } from './realm';
 
   export let active = false
   export let handleSave
@@ -53,7 +53,7 @@
     <Button style="margin-left:5px" size="x-small" on:click={cancelEdit}>
       Cancel
     </Button>
-    <Button style="margin-left:5px" size="x-small" BoardTypeclass="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
+    <Button style="margin-left:5px" size="x-small" RealmTypeclass="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
       Save
     </Button>
   </div>

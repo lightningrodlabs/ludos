@@ -1,8 +1,8 @@
 <script>
 	import Toolbar from "$lib/Toolbar.svelte";
-  import BoardEditor from "../lib/BoardEditor.svelte";
-  import BoardPane from "../lib/BoardPane.svelte";
-  import BoardsList from "../lib/BoardList.svelte";
+  import RealmEditor from "../lib/RealmEditor.svelte";
+  import RealmPane from "../lib/RealmPane.svelte";
+  import RealmsList from "../lib/RealmList.svelte";
   import SpaceEditor from "../lib/SpaceEditor.svelte";
 
 </script>
