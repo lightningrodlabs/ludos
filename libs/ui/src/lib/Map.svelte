@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Space, type Connection, Topology } from "./realm";
+  import { type Space, type Connection, Topology, type Location } from "./realm";
   import type { Dictionary } from "@holochain-open-dev/core-types";
   import type { v1 as uuidv1 } from "uuid";
 
@@ -11,12 +11,37 @@
   
   let selectedElement = undefined
   let scale: number = 1.0
+  let pan: Location = {x:0, y: 0, z: 0}
 
   const handleWheel = (e:WheelEvent) => {
-    if (e.deltaY > 0) {
-      scale *= 1.1
-    } else if (e.deltaY < 0 ) {
-      scale *= .9
+    if (e.shiftKey) {
+      if (e.deltaY > 0) {
+        scale *= 1.1
+      } else if (e.deltaY < 0 ) {
+        scale *= .9
+      }
+    }
+  }
+  const PAN_UNIT = 15
+  const handleKey = (e:KeyboardEvent) => {
+    const t = e.target as HTMLElement
+    if (t.nodeName != "INPUT" && t.nodeName != "TEXTAREA" ) {
+      e.preventDefault();
+
+      switch (e.key) {
+      case "ArrowLeft":
+          pan.x -= PAN_UNIT
+          break;
+      case "ArrowRight":
+          pan.x += PAN_UNIT
+          break;
+      case "ArrowUp":
+          pan.y -= PAN_UNIT
+          break;
+      case "ArrowDown":
+          pan.y += PAN_UNIT
+          break;
+      }
     }
   }
   const availableConnections = (from:Space) => {
@@ -55,10 +80,13 @@
     return conns
   }
 </script>
-<svelte:window on:wheel={handleWheel}/>
+<svelte:window
+  on:keydown={handleKey}
+  on:wheel={handleWheel}
+   />
 
 <div class="map" >
-  <svg viewBox={`${-300*scale} ${-200*scale} ${600*scale} ${400*scale}`}>
+  <svg viewBox={`${(-300+pan.x)*scale} ${(-200+pan.y)*scale} ${600*scale} ${400*scale}`}>
     <filter id="selected">
       <feDropShadow dx="0" dy="0" stdDeviation="0.5"
           flood-color="cyan"/>
