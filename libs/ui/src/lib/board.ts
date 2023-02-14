@@ -2,128 +2,153 @@ import type { RootStore, SynGrammar, WorkspaceStore } from "@holochain-syn/core"
 import { get } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, type decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
-
-
+import type { Dictionary } from "@holochain-open-dev/core-types";
 
 export const enum BoardType {
   Ludos = 'Ludos',
 }
 
-export class VoteType {
-    type: uuidv1
-    constructor(public emoji: string, public toolTip: string, public maxVotes: number){
-        this.type = uuidv1()
+export type Location = {
+  x: number
+  y: number
+  z: number
+}
+
+export class Connection {
+    public id: uuidv1
+    constructor(public from: uuidv1, public to: uuidv1, public text: string){
+        this.id = uuidv1()
     }
 }
 
 export type Space = {
     id: uuidv1;
-    x: number
-    y: number
-    z: number
+    name: string;
+    location: Location
     text: string;
     props: Object;
-  };
+};
   
-  export interface BoardState {
-    type: BoardType;
+export interface BoardState {
+  type: BoardType;
+  status: string;
+  name: string;
+  story: string;
+  spaces: Dictionary<Space>;
+  connections: Dictionary<Connection>
+}
+
+export type BoardDelta =
+  | {
+    type: "set-type";
+    boardType: BoardType;
+    }
+  | {
+    type: "set-status";
     status: string;
-    name: string;
-    story: string;
-    spaces: Space[];
-  }
+    }
+  | {
+      type: "set-name";
+      name: string;
+    }
+    | {
+      type: "set-story";
+      story: string;
+    }
+    | {
+      type: "update-space-props";
+      id: uuidv1;
+      props: Object;
+    }
+  | {
+      type: "update-space-text";
+      id: uuidv1;
+      text: string;
+    }
+  | {
+      type: "update-space-location";
+      id: uuidv1;
+      location: Location;
+    }
+  | {
+      type: "add-space";
+      value: Space;
+    }
+  | {
+      type: "delete-space";
+      id: string;
+    }
+    | {
+      type: "add-connection";
+      connection: Connection;
+    }
+  | {
+      type: "delete-connection";
+      id: string;
+    };
   
-  export type BoardDelta =
-    | {
-      type: "set-type";
-      boardType: BoardType;
-      }
-    | {
-      type: "set-status";
-      status: string;
-      }
-    | {
-        type: "add-space";
-        value: Space;
-      }
-    | {
-        type: "set-name";
-        name: string;
-      }
-      | {
-        type: "set-story";
-        story: string;
-      }
-      | {
-        type: "update-space-props";
-        id: uuidv1;
-        props: Object;
-      }
-   | {
-        type: "update-space-text";
-        id: uuidv1;
-        text: string;
-      }
-    | {
-        type: "delete-space";
-        id: string;
-      };
-  
-  export type BoardGrammar = SynGrammar<
+export type BoardGrammar = SynGrammar<
   BoardDelta,
   BoardState
   >;
   
-  export const boardGrammar: BoardGrammar = {
-    initState(state)  {
-      state.status = ""
-      state.name = "untitled"
-      state.story = "backstory yet to be written"
-      state.spaces = []
-    },
-    applyDelta( 
-      delta: BoardDelta,
-      state: BoardState,
-      _ephemeralState: any,
-      _author: AgentPubKey
-    ) {
+export const boardGrammar: BoardGrammar = {
+  initState(state)  {
+    state.status = ""
+    state.name = "untitled"
+    state.story = "backstory yet to be written"
+    state.spaces = {}
+    state.connections = {}
+  },
+  applyDelta( 
+    delta: BoardDelta,
+    state: BoardState,
+    _ephemeralState: any,
+    _author: AgentPubKey
+  ) {
 
-      if (delta.type == "set-type") {
-        state.type = delta.boardType
-      }      
-      if (delta.type == "set-status") {
-        state.status = delta.status
+    if (delta.type == "set-type") {
+      state.type = delta.boardType
+    }      
+    if (delta.type == "set-status") {
+      state.status = delta.status
+    }
+    if (delta.type == "set-name") {
+      state.name = delta.name
+    }
+    if (delta.type == "set-story") {
+      state.story = delta.story
+    }
+    else if (delta.type == "add-space") {
+      state.spaces[delta.value.id] = delta.value
+    }
+    else if (delta.type == "update-space-text") {
+      if (state.spaces[delta.id] !== undefined) {
+        state.spaces[delta.id].text = delta.text
       }
-      if (delta.type == "set-name") {
-        state.name = delta.name
+    }
+    else if (delta.type == "update-space-location") {
+      if (state.spaces[delta.id] !== undefined) {
+        state.spaces[delta.id].location = delta.location;
       }
-      if (delta.type == "set-story") {
-        state.story = delta.story
+    }
+    else if (delta.type == "update-space-props") {
+      if (state.spaces[delta.id] !== undefined) {
+        state.spaces[delta.id].props = delta.props;
       }
-      else if (delta.type == "add-space") {
-        state.spaces.push(delta.value)
-      }
-      else if (delta.type == "update-space-text") {
-        state.spaces.forEach((space, i) => {
-          if (space.id === delta.id) {
-            state.spaces[i].text = delta.text;
-          }
-        });
-      }
-      else if (delta.type == "update-space-props") {
-        state.spaces.forEach((space, i) => {
-          if (space.id === delta.id) {
-            state.spaces[i].props = delta.props;
-          }
-        });
-      }
-      else if (delta.type == "delete-space") {
-        const index = state.spaces.findIndex((space) => space.id === delta.id)
-        state.spaces.splice(index,1)
-      }
-    },
-  };
-  
+    }
+    else if (delta.type == "delete-space") {
+      delete state.spaces[delta.id]
+    }
+    else if (delta.type == "add-connection") {
+      state.connections[delta.connection.id] = delta.connection
+    }
+    else if (delta.type == "delete-connection") {
+      delete state.connections[delta.id]
+    }
+  },
+};
+
 
 export const CommitTypeBoard :string = "board"
 

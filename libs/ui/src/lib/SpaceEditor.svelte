@@ -1,19 +1,19 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { Button, Dialog } from "svelte-materialify"
+  import type { Connection } from './board';
 
   export let active = false
   export let handleSave
   export let handleDelete = undefined
   export let cancelEdit
+  export let spaces = {}
   export let text = ''
+  export let name = ''
   export let props = {}
   export let x = 0
   export let y = 0
-  const setColor = (color) => {
-    // TODO fix later when there are more properties
-    props = {color}
-  }
+  export let connections: Connection[] = []
   let inputElement
   onMount(() => inputElement.focus())
   const handleKeydown = (e) => {
@@ -27,10 +27,15 @@
 <svelte:window on:keydown={handleKeydown}/>
 
 <Dialog persistent bind:active width={600}>
-<div class='space-editor' style:background-color={props.color}>
+<div class='space-editor'>
   <div>x:{x} y:{y}</div>
   <div class="space-elements">
-  <textarea class='textarea' bind:value={text} bind:this={inputElement}/>
+    Name: <input class='textinput' bind:value={name} bind:this={inputElement}/>
+    Description: <textarea class='textinput' bind:value={text}/>
+    Connections:<br />
+    {#each connections as  connection}
+      To: {spaces[connection.to].name} <textarea class='textinput' bind:value={connection.text}/>
+    {/each}
 
   </div>
   <div class='controls'>
@@ -42,7 +47,7 @@
     <Button style="margin-left:5px" size="x-small" on:click={cancelEdit}>
       Cancel
     </Button>
-    <Button style="margin-left:5px" size="x-small" class="primary-color" on:click={() => handleSave(text, props, x, y) }>
+    <Button style="margin-left:5px" size="x-small" class="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
       Save
     </Button>
   </div>
@@ -60,18 +65,19 @@
   }
   .space-elements {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-basis: 100%;
   }
-  .textarea {
+  .textinput {
     background-color: rgba(255, 255, 255, 0.72);
     border: 1px solid #C9C9C9;
     box-sizing: border-box;
     border-radius: 3px;
-    width: 100%;
-    height: 100%;
     font-weight: normal;
     padding: 2px;
+  }
+  textarea {
+    width: 100%;
   }
   .controls {
     display: flex;

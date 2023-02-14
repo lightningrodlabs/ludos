@@ -74,10 +74,10 @@
   flex-grow: 1;
 }
 .text {
-  color: green;
+  color: #f90;
   font-family: Courier New;
   font-size: var(--font-size, 20px);
-  text-shadow: 0px 0px 10px green, 0px 0px 5px green;
+  text-shadow: 0px 0px 10px #f90, 0px 0px 5px #f90;
   -webkit-font-smoothing: none;
 }
 input {

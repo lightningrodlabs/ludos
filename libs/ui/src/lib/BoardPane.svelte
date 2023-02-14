@@ -2,11 +2,12 @@
   import { getContext } from "svelte";
   import { fade } from 'svelte/transition';
   import SpaceEditor from "./SpaceEditor.svelte";
-  import type { v1 as uuidv1 } from "uuid";
+  import Map from "./Map.svelte";
+  import { v1 as uuidv1 } from "uuid";
   import type { LudosStore } from "./ludosStore";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { Pane } from "./pane";
-  import { BoardType, type Space } from "./board";
+  import { BoardType, Connection, type Space } from "./board";
   import { onMount } from "svelte/internal";
   import Terminal from "./Terminal.svelte";
   import { Button, Icon, Tooltip } from "svelte-materialify";
@@ -30,12 +31,6 @@
 
   const { getStore } :any = getContext("tsStore");
   let tsStore: LudosStore = getStore();
-  let minX = 1000;
-  let minY = 1000;
-  let maxX = -1000;
-  let maxY = -1000;
-  let dx = 0;
-  let dy = 0;
 
   let location={x:0,y:0}
   let terminal
@@ -44,9 +39,8 @@
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
   $: spaces = $state ? $state.spaces : undefined;
+  $: connections = $state ? $state.connections : undefined;
   $: currentSpace = findSpace(location.x, location.y ,spaces)
-
-  $: rows = makeRows(spaces)
 
   onMount(async () => {
     if (currentSpace) {
@@ -54,14 +48,15 @@
       terminal.addToScreen($state.story)
       terminal.addToScreen("")
   		terminal.addToScreen(currentSpace.text)
+  		terminal.addToScreen(connTexts(currentSpace.id).join("\n"))
     }
     terminal.focus()
 	});
   const findSpace = (x, y, spaces) => {
     let result: Space | undefined 
     if (spaces) {
-      for (const space of spaces) {
-        if (space.x == x && space.y == y) {
+      for (const space of Object.values(spaces) as Space[]) {
+        if (space.location.x == x && space.location.y == y) {
           return space
         }
       }
@@ -69,56 +64,40 @@
     return result
   }
 
-  const makeRows = (spaces): Array<Array<Space>> => {
-    minX = 1000;
-    minY = 1000;
-    maxX = -1000;
-    maxY = -1000;
-    dx = 0;
-    dy = 0;
-    spaces.forEach((space: Space) => {
-      if (space.y < minY) {
-        minY = space.y
-      }
-      if (space.x < minX) {
-        minX = space.x
-      }
-      if (space.y > maxY) {
-        maxY = space.y
-      }
-      if (space.x > maxX) {
-        maxX = space.x
-      }
-    })
-    dx = maxX - minX + 1
-    dy = maxY - minY + 1
-    const rows:Array<Array<Space>> = []
-      spaces.forEach((space: Space) => {
-      const y = space.y - minY
-      const x = space.x - minX
-      if (rows[y]===undefined) {
-        rows[y]=[]
-      }
-      rows[y][x] = space
-    })
-    console.log("ROWS",rows)
-    return rows
-  }
   let createX = 0;
   let createY = 0;
+  let createFrom = ""
   let editText = "";
+  let editName = ""
+  let editConnections = []
   let editingSpaceId: uuidv1
   let creatingSpace = false
 
-  const newSpace = (x:number, y:number) => () => {
+  const connect = (from: uuidv1, x:number, y:number) => {
+    const space = findSpace(x,y, spaces)
+    if (space) {
+      editSpace(space.id)
+    } else {
       creatingSpace = true
-
       createX = x
       createY = y
-  };
+      createFrom = from
+    }
+  }
   
-  const createSpace = (text: string, props) => {
-    pane.addSpace(text, props, createX, createY)
+  const createSpace = (name: string, text: string, props, connections: Connection[]) => {
+    const space = {
+          id: uuidv1(),
+          name,
+          location: {x: createX,y: createY, z:0},
+          text,
+          props,
+        };
+    pane.dispatch("requestChange", [{ type: "add-space", value: space }]);
+
+    const from = new Connection(createFrom, space.id, `this space leads to ${name}`)
+    const to = new Connection(space.id, createFrom, `this space leads to ${spaces[createFrom].name}`)
+    pane.dispatch("requestChange", [{ type: "add-connection", connection: from}, { type: "add-connection", connection: to}]);
     location.x = createX
     location.y = createY
     creatingSpace = false
@@ -128,17 +107,23 @@
     creatingSpace = false
     editingSpaceId = undefined    
     editText = "";
+    editName = "";
   };
 
   const cancelEdit = () => {
     clearEdit();
   }
   
-  const editSpace = (id:uuidv1, text: string, x,y) => () => {
-    editingSpaceId = id;
-    editText = text;
-    location.x = x
-    location.y = y
+  const editSpace = (id: uuidv1 ) => {
+    const space:Space = spaces[id]
+    if (space) {
+      editingSpaceId = id;
+      editText = space.text;
+      editName = space.name;
+      editConnections = cloneDeep(Object.values(connections).filter(c => c.from==id))
+      location.x = space.location.x
+      location.y = space.location.y
+    }
   };
 
   const closeBoard = () => {
@@ -150,10 +135,14 @@
     if (space) {
       location.x = x
       location.y = y
-      return space.text
+      return space.text + connTexts(space.id).join("\n")
     }
     return "Your way is blocked"
    };
+
+  const connTexts = (from: uuidv1) : string[] => {
+    return Object.values(connections).filter(c=>c.from==from).map(c=>c.text)
+  }
 
   const doCommand = (command:string):string => {
     switch(command) {
@@ -163,7 +152,7 @@
       case "story":
         return $state.story
       case "look":
-        return currentSpace.text
+        return currentSpace.text+"\n"+connTexts(currentSpace.id).join("\n")
       case "hack":
         return `You are at: ${location.x},${location.y}\nSpace details: ${JSON.stringify(currentSpace)}`
       case "awaken":
@@ -218,70 +207,18 @@ let editing = false
         </Button>
         <Button size=small icon on:click={closeBoard} title="Close">
           <Icon path={mdiCloseBoxOutline} />
-        </Button>
+        </Button> 
       </div>
     </div>
-    <div class="grid">
-      {#each rows as row, y}
-        <div class="row">
-          {#if row}
-            {#each row as space, x}
-              {#if space}
-                <Tooltip bottom>
-                  <div class="space filled {(location.x == space.x && location.y == space.y)?"pulsing":''}">
-                    <div class="space-button-row">
-                      <div class="space-no-button"></div>
-                      {#if rows[y-1] && rows[y-1][x]}
-                        <div class="space-no-button"></div>                    
-                      {:else}
-                        <div class="space-button space-button-new" on:click={newSpace(space.x,space.y-1)}></div>
-                      {/if}
-                      <div class="space-no-button"></div>                    
-                    </div>
-                    <div class="space-button-row">
-                      {#if !row[x-1]}
-                        <div class="space-button space-button-new" on:click={newSpace(space.x-1,space.y)}></div>                    
-                      {:else}
-                        <div class="space-no-button"></div>                    
-                      {/if}
-                      <div class="space-button space-button-edit" on:click={editSpace(space.id, space.text, space.x, space.y)}></div>                    
-                      {#if !row[x+1]}
-                        <div class="space-button space-button-new" on:click={newSpace(space.x+1,space.y)}></div>                    
-                      {:else}
-                        <div class="space-no-button"></div>                    
-                      {/if}
-                    </div>
-                    <div class="space-button-row">
-                      <div class="space-no-button"></div>                    
-                      {#if rows[y+1] && rows[y+1][x]}
-                        <div class="space-no-button"></div>                    
-                      {:else}
-                        <div class="space-button space-button-new" on:click={newSpace(space.x,space.y+1)}></div>
-                      {/if}
-                      <div class="space-no-button"></div>                    
-                    </div>
-                  </div>
-                  <span slot="tip">x:{x} y:{y}, space: {(space.text.length <= 100) ?  space.text :  space.text.slice(0, 100) + '...'}</span>
-                </Tooltip>
-              {:else}
-                <div class="space"></div>
-              {/if}
-            {/each}
-          {:else}
-              {#each Array(dx) as _, index (index) }
-              <div class="space">
-                --
-              </div>
-              {/each}
-          {/if}
-        </div>
-      {/each}
-    </div>
+    <Map spaces={spaces} connections={connections} connect={connect} edit={editSpace}></Map>
+  
     {#if creatingSpace}
-    <SpaceEditor handleSave={createSpace} {cancelEdit} bind:active={creatingSpace} x={createX} y={createY} />
+    <SpaceEditor spaces={spaces} handleSave={createSpace} {cancelEdit} bind:active={creatingSpace} x={createX} y={createY}
+      connections={[]} />
     {/if}
     {#if editingSpaceId }
       <SpaceEditor
+        spaces={spaces}
         x={location.x}
         y={location.y}
         bind:active={editingSpaceId}
@@ -292,8 +229,10 @@ let editing = false
           pane.deleteSpace(editingSpaceId, clearEdit)
         }
         {cancelEdit}
+        name={editName}
         text={editText}
         props={{}}
+        connections={editConnections}
       />
     {/if}
   {/if}

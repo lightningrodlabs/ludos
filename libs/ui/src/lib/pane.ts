@@ -28,17 +28,6 @@ export class Pane {
         alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
     }
 
-    addSpace = (text: string, props: any, x:number, y:number) => {
-        const space = {
-          id: uuidv1(),
-          x,
-          y,
-          text,
-          props,
-        };
-        this.dispatch("requestChange", [{ type: "add-space", value: space }]);
-    };
-
     updateSpace = (spaces, id: uuidv1, closeFn) => (text:string, props:any) => {
         const space = spaces.find((space) => space.id === id);
         if (!space) {

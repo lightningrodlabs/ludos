@@ -16,8 +16,8 @@
         const board = await store.boardList.makeBoard({type, name, story, spaces:[
       {
           id: uuidv1(),
-          x: 0,
-          y: 0,
+          location: {x: 0, y: 0, z:0},
+          name: "The Unamed Space",
           text: "You are in a space that has no qualities whatsoever.",
           props: {},
         }
