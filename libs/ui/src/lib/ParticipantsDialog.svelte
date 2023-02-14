@@ -27,7 +27,7 @@
 
 <Dialog bind:active>
     <div class="participants">
-        <h5>Participans Online</h5>
+        <h5>Players Online</h5>
         <List>
             {#each activeFolk as folk}
             <ListItem dense={true}>

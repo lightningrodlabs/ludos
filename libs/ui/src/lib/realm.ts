@@ -180,7 +180,7 @@ export class Realm {
         return get(this.workspace.state)
     }
     requestChanges(deltas: Array<RealmDelta>) {
-        console.log("REQUESTING BOARD CHANGES: ", deltas)
+        console.log("REQUESTING REALM CHANGES: ", deltas)
         this.workspace.requestChanges(deltas)
     }
     participants()  {

@@ -74,12 +74,16 @@
             The players considered their play, like our living, a kind of dreaming.  And so when they were crafting new games they felt themselves to be awake.
           </p>
           <p>      
-          So, here, dear players, we offer you the chance to join into this long lost game-form. To shift between the dreaming and the waking. 
+          So, here, dear players, we offer you the chance to join into this long lost game-form. 
+          To craft realms of story.
+          To shift between the dreaming and the waking. 
           </p>
           <p>
             Click on the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> above to create your first realm.
 
-            Click on the yellow square to edit the description of the space.  You can type in the terminal to begin your dreaming, or if you are clicky type person who remains awake and crafting, then click on a green squares to add an adjacent space.  
+            Click on the circle to edit the description of the space.  You can type in the terminal to begin your dreaming, 
+            or if you are clicky type person who remains awake and crafting, 
+            then click on the blue connection dots to create connections to adjacent spaces (don't forget to edit the connection text in originating space too!)
             Soon you will have crafted an entire realm to share!
           </p>
           <p>

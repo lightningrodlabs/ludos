@@ -29,10 +29,11 @@
 
 <Dialog persistent bind:active width={600}>
 <div class='space-editor'>
-  <div>
-    
+  <div class="header">
+    <div class="header-items">
     x:{x} 
     y:{y}
+    </div>
   </div>
 
   <div class="space-elements">
@@ -68,6 +69,12 @@
     padding: 10px;
     font-size: 12px;
     flex-direction: column;
+  }
+  .header {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .header-items {
   }
   .space-elements {
     display: flex;
