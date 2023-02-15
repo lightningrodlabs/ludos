@@ -42,7 +42,7 @@
 </script>
 
 <Button icon on:click={()=>{showParticipants=true}} style="margin-left:10px" title="Show Players"><Icon path={mdiAccountGroup} />{$participants.active.length }</Button>
-<Button icon on:click={editAvatar} title={myName ? myName:"Edit Avatar"} style="margin-left:10px"><AvatarIcon avatar={myAvatar} border={false}></AvatarIcon></Button>
+<Button icon on:click={editAvatar} title={myName ? myName:"Edit Avatar"} style="margin-left:10px"><AvatarIcon key={store.client.myPubKey} avatar={myAvatar} border={false}></AvatarIcon></Button>
 
 {#if showParticipants}
 <ParticipantsDialog bind:active={showParticipants} avatars={$avatars} />

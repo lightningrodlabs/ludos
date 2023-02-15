@@ -30,17 +30,17 @@
 <Dialog bind:active>
     <div class="participants">
         <div class="dialog-title">Players Online</div>
-            <div class="list">
-            {#each activeFolk as folk}
+        <div class="list">
+            {#each activeFolk.map(f=>{return {folk:f, folkB64:encodeHashToBase64(f)}}) as {folk, folkB64}}
               <div class="list-item">
-                <AvatarIcon avatar={avatars[encodeHashToBase64(folk)]} size=40px />
-                <div style="margin-left:10px; font-size:120%">
-                {#if avatars[encodeHashToBase64(folk)]}
-                    {avatars[encodeHashToBase64(folk)].name}
-                {:else} <i>no-name</i>
-                {/if}
-                </div>
-            </div>
+                  <AvatarIcon avatar={avatars[folkB64]} key={folk} size={40} />
+                  <div style="margin-left:10px; font-size:120%">
+                  {#if avatars[folkB64]}
+                      {avatars[folkB64].name}
+                  {:else} <i>no-name</i>
+                  {/if}
+                  </div>
+              </div>
             {/each}
         </div>
     </div>

@@ -84,7 +84,6 @@
   let panning = false
   const startPan = (e:MouseEvent) =>{
     const t = e.target as HTMLElement
-    console.log("T", t, t.nodeName)
     if (t.nodeName == "svg") {
       panning = true
       panStart.x = e.clientX

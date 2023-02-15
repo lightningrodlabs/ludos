@@ -46,8 +46,7 @@
       terminal.addToScreen("")
       terminal.addToScreen($state.story)
       terminal.addToScreen("")
-  		terminal.addToScreen(currentSpace.text)
-  		terminal.addToScreen(connTexts(currentSpace.id).join("\n"))
+  		terminal.addToScreen(lookText(currentSpace))
     }
     terminal.focus()
 	});
@@ -157,7 +156,7 @@
     tsStore.realmList.closeActiveRealm();
   };
   const lookText = (s:Space) => {
-    return s.text?s.text:s.name+"\n" + connTexts(s.id).join("\n")
+    return (s.text?s.text:s.name)+"\n" + connTexts(s.id).join("\n")
   }
   const moveTo = (x,y) => {
     x = location.x+x
@@ -186,7 +185,8 @@
   }
 
   const connTexts = (from: uuidv1) : string[] => {
-    return Object.values(connections).filter(c=>c.from==from).map(c=>c.text)
+    const conns = Object.values(connections).filter(c=>c.from==from)
+    return conns.map(c=>c.text)
   }
 
   const helpCmd = () => {
