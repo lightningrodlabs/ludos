@@ -19,7 +19,7 @@
 
 <Dialog persistent bind:active>
   <div class="avatar-editor">
-    <div class="dialog-title">Edit Profile</div>
+      <div class="dialog-title">Edit Profile</div>
       Name: <input class='textarea' bind:value={avatar.name} />
       Image URL: 
       <span class="row">

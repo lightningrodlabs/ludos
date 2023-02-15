@@ -63,5 +63,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <RealmEditor handleSave={updateRealm(realmHash)} handleDelete={archiveRealm(realmHash)} cancelEdit={close} topology={topology} text={editName} story={editStory}/>
+    <RealmEditor title="Edit Realm" handleSave={updateRealm(realmHash)} handleDelete={archiveRealm(realmHash)} cancelEdit={close} topology={topology} text={editName} story={editStory}/>
 </Dialog>

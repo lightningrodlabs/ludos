@@ -11,6 +11,8 @@
     export let story = ''
     export let topology: Topology| undefined
     let titleElement
+    export let title
+
 
     const handleKeydown = (e) => {
       if (e.key === "Escape") {
@@ -42,6 +44,8 @@
 <svelte:window on:keydown={handleKeydown}/>
 
 <div class='realm-editor'>
+  <div class="dialog-title">{title}</div>
+
   {#if handleDelete === undefined}
     <Menu>
       <div slot="activator">

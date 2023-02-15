@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Button, Icon } from 'svelte-materialify';
-    import { mdiAccountGroup, mdiAccount } from '@mdi/js';
+    import { mdiAccountGroup } from '@mdi/js';
     import ParticipantsDialog from './ParticipantsDialog.svelte';
     import type { Avatar } from './realmList';
     import AvatarDialog from './AvatarDialog.svelte';

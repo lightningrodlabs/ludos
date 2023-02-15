@@ -27,5 +27,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <RealmEditor handleSave={addRealm} cancelEdit={()=>active=false} />
+    <RealmEditor title="New Realm" handleSave={addRealm} cancelEdit={()=>active=false} />
 </Dialog>
