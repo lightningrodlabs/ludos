@@ -80,14 +80,40 @@
     })
     return conns
   }
+  let panStart = {x:0, y:0}
+  let panning = false
+  const startPan = (e:MouseEvent) =>{
+    const t = e.target as HTMLElement
+    console.log("T", t, t.nodeName)
+    if (t.nodeName == "svg") {
+      panning = true
+      panStart.x = e.clientX
+      panStart.y = e.clientY
+    }
+  }
+  const stopPan = (e:MouseEvent) =>{
+    panning = false
+
+  }
+  const doPan = (e:MouseEvent) =>{
+    if (panning) {
+      pan.x = (panStart.x - e.clientX)/1.5
+      pan.y = (panStart.y - e.clientY)/1.5
+    }
+  }
 </script>
 <svelte:window
-  on:keydown={handleKey}
   on:wheel={handleWheel}
    />
 
-<div class="map" >
-  <svg viewBox={`${(-300+pan.x)*scale} ${(-200+pan.y)*scale} ${600*scale} ${400*scale}`}>
+<div class="map"
+  class:grabbing={panning} >
+  <svg 
+    viewBox={`${(-300+pan.x)*scale} ${(-200+pan.y)*scale} ${600*scale} ${400*scale}`}
+    on:mousedown={startPan}
+    on:mouseup={stopPan}
+    on:mousemove={doPan}
+    >
     <filter id="selected">
       <feDropShadow dx="0" dy="0" stdDeviation="0.5"
           flood-color="cyan"/>
@@ -139,22 +165,28 @@
       {/each}
   {/each}
 </svg>
-<div style="font-size: 70%;margin-left: 5px;">shift-mouse-wheel to zoom; arrows to pan</div>
+<div style="font-size: 70%;margin-left: 5px;">shift-mouse-wheel to zoom; drag to pan</div>
 </div>
 
 <style>
   .map {
     margin: 0;
     border: solid 1px;
+    cursor: grab;
+  }
+  .grabbing {
+    cursor: grabbing;
   }
   .space {
     stroke: green;
     stroke-width: 4;
     fill: yellow;
+    cursor: pointer;
   }
   .connector {
     stroke-width: 0;
     fill: blue;
+    cursor: pointer;
   }
   .connection {
     stroke:green;
