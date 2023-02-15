@@ -1,5 +1,6 @@
 <script type="ts">
   import { onMount } from "svelte";
+  import AvatarIcon from './AvatarIcon.svelte';
   export let fontSize = '20px';
   export let maxHeight = '100%';
   export let maxWidth = '100%';

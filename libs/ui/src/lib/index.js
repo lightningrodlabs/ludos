@@ -15,4 +15,4 @@ export { default as SpaceEditor} from './SpaceEditor.svelte';
 export { default as Toolbar } from './Toolbar.svelte';
 export { default as Collapsable } from './Collapsable.svelte';
 export { default as Terminal } from './Terminal.svelte';
-export { default as TSLogoIcon } from './icons/TSLogoIcon.svelte';
+export { default as LogoIcon } from './icons/LogoIcon.svelte';

@@ -138,7 +138,7 @@
       {/each}
   {/each}
 </svg>
-<div style="font-size: 70%;margin-left: 5px;">shift-mouse-wheel to zoom, arrows to pan</div>
+<div style="font-size: 70%;margin-left: 5px;">shift-mouse-wheel to zoom; arrows to pan</div>
 </div>
 
 <style>

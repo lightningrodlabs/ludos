@@ -24,7 +24,7 @@
     "./realm": "./package/realm.js",
     "./grammar": "./package/grammar.js",
     "./icon.svg": "./package/icon.svg",
-    "./icons/TSLogoIcon.svelte": "./package/icons/TSLogoIcon.svelte",
+    "./icons/LogoIcon.svelte": "./package/icons/LogoIcon.svelte",
     "./ludosStore": "./package/ludosStore.js"
   },
   "svelte": "./index.js",

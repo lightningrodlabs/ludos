@@ -4,6 +4,7 @@
     import ParticipantsDialog from './ParticipantsDialog.svelte';
     import type { Avatar } from './realmList';
     import AvatarDialog from './AvatarDialog.svelte';
+    import AvatarIcon from './AvatarIcon.svelte';
     import { getContext, onMount } from "svelte";
     import type { LudosStore } from "./ludosStore";
     import { cloneDeep } from "lodash";
@@ -14,6 +15,7 @@
     const myAgentPubKey = store.myAgentPubKey()
     $: avatars = store.realmList.avatars()
     $: myName = $avatars[myAgentPubKey]? $avatars[myAgentPubKey].name : ""
+    $: myAvatar = $avatars[myAgentPubKey]? $avatars[myAgentPubKey] : undefined
     $: participants = store.realmList.participants()
     let showParticipants = false
     let editingAvatar = false
@@ -40,7 +42,7 @@
 </script>
 
 <Button icon on:click={()=>{showParticipants=true}} style="margin-left:10px" title="Show Players"><Icon path={mdiAccountGroup} />{$participants.active.length }</Button>
-<Button icon on:click={editAvatar} title={myName ? myName:"Edit Avatar"} style="margin-left:10px"><Icon path={mdiAccount} /></Button>
+<Button icon on:click={editAvatar} title={myName ? myName:"Edit Avatar"} style="margin-left:10px"><AvatarIcon avatar={myAvatar} border={false}></AvatarIcon></Button>
 
 {#if showParticipants}
 <ParticipantsDialog bind:active={showParticipants} avatars={$avatars} />

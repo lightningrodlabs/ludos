@@ -1,9 +1,11 @@
 <script lang="ts">
   import { encodeHashToBase64 } from '@holochain/client';
-  import { Dialog, List, ListItem } from 'svelte-materialify';
+  import { Dialog } from 'svelte-materialify';
   import { HoloIdenticon } from "@holochain-open-dev/elements";
   import { getContext } from "svelte";
   import type { LudosStore } from "./ludosStore";
+  import AvatarIcon from './AvatarIcon.svelte';
+
 
   const { getStore } :any = getContext('tsStore');
   const store:LudosStore = getStore();
@@ -27,27 +29,33 @@
 
 <Dialog bind:active>
     <div class="participants">
-        <h5>Players Online</h5>
-        <List>
+        <div class="dialog-title">Players Online</div>
+            <div class="list">
             {#each activeFolk as folk}
-            <ListItem dense={true}>
-                <div style="margin-left:10px">
+              <div class="list-item">
+                <AvatarIcon avatar={avatars[encodeHashToBase64(folk)]} size=40px />
+                <div style="margin-left:10px; font-size:120%">
                 {#if avatars[encodeHashToBase64(folk)]}
                     {avatars[encodeHashToBase64(folk)].name}
                 {:else} <i>no-name</i>
                 {/if}
                 </div>
-                <span slot="prepend">
-                    <holo-identicon hash={folk}></holo-identicon>
-                </span>
-            </ListItem>
+            </div>
             {/each}
-        </List>
+            </div>
     </div>
 </Dialog>
 
 <style>
     .participants {
-        padding: 10px;
+        margin: 20px;
+    }
+    .list {
+        display: flex;
+        flex-direction: column;
+    }
+    .list-item {
+        display: flex;
+        align-items: center;
     }
 </style>

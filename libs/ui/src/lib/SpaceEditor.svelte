@@ -29,6 +29,7 @@
 
 <Dialog persistent bind:active width={600}>
 <div class='space-editor'>
+  <div class="dialog-title">Edit Space</div>
   <div class="header">
     <div class="header-items">
     x:{x} 
@@ -38,7 +39,7 @@
 
   <div class="space-elements">
     Name: <input class='textinput' bind:value={name} bind:this={inputElement}/>
-    Description: <textarea class='textinput' bind:value={text}/>
+    Description: <textarea class='textinput description-text' bind:value={text}/>
     Connections:<br />
     {#each connections as  connection}
       To: {spaces[connection.to].name} <textarea class='textinput' bind:value={connection.text}/>
@@ -81,13 +82,16 @@
     flex-direction: column;
     flex-basis: 100%;
   }
+  .description-text {
+    height: 100%;
+  }
   .textinput {
     background-color: rgba(255, 255, 255, 0.72);
     border: 1px solid #C9C9C9;
     box-sizing: border-box;
     border-radius: 3px;
     font-weight: normal;
-    padding: 2px;
+    padding: 4px;
   }
   textarea {
     width: 100%;

@@ -210,7 +210,7 @@ const dream = (state) =>{
 }
 let editing = false
 const deleteSpace = () => {
-    this.dispatch("requestChange", [{ type: "delete-space", editingSpaceId }]);
+    dispatch("requestChange", [{ type: "delete-space", editingSpaceId }]);
     cancelEdit()
 }
 const updateSpace = (name:string, text:string, props:any) => {
@@ -230,7 +230,7 @@ const updateSpace = (name:string, text:string, props:any) => {
         changes.push({ type: "update-space-props", id: space.id, props: cloneDeep(props)})
       }
       if (changes.length > 0) {
-      this.dispatch("requestChange", changes);
+      dispatch("requestChange", changes);
       }
     }
     cancelEdit()

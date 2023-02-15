@@ -1,5 +1,5 @@
 <script type="ts">
-  import TSLogoIcon from "./icons/TSLogoIcon.svelte";
+  import LogoIcon from "./icons/LogoIcon.svelte";
   import Folk from "./Folk.svelte";
   import { Icon, Button } from 'svelte-materialify';
   import { mdiBug } from '@mdi/js';
@@ -9,7 +9,7 @@
 
 <div class='toolbar'>
   <div class="left-items">
-    <div class="logo"><TSLogoIcon /></div><h4 class="logo-text">Realms of Ludos</h4>
+    <div class="logo"><LogoIcon /></div><h4 class="logo-text">Realms of Ludos</h4>
     <RealmMenu ></RealmMenu>
   </div>
   <div class="right-items">
