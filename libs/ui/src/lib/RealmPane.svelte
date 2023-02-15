@@ -30,7 +30,7 @@
   const { getStore } :any = getContext("tsStore");
   let tsStore: LudosStore = getStore();
 
-  let location={x:0,y:0}
+  let location={x:0,y:0,z:0}
   let terminal
   let dreaming = false
   let dispatch = createEventDispatcher()
@@ -156,54 +156,122 @@
   const closeRealm = () => {
     tsStore.realmList.closeActiveRealm();
   };
-
+  const lookText = (s:Space) => {
+    return s.text?s.text:s.name+"\n" + connTexts(s.id).join("\n")
+  }
   const moveTo = (x,y) => {
-    const space = findSpace(x,y, spaces)
-    if (space) {
-      location.x = x
-      location.y = y
-      return space.text + connTexts(space.id).join("\n")
+    x = location.x+x
+    y = location.y+y
+    const conns = Object.values(connections).filter(c=>c.from == currentSpace.id)
+    for (const c of conns) {
+      const s = spaces[c.to]
+      if (s && s.location.x == x && s.location.y == y) {
+        location = s.location
+        return lookText(s)
+      }
     }
-    return "Your way is blocked"
-   };
+    return "Can't go that way"
+  }
+
+  const moveUp = () => {
+    const conns = Object.values(connections).filter(c=>c.from == currentSpace.id)
+    for (const c of conns) {
+      const s = spaces[c.to]
+      if (s && s.location.y == location.y-1) {
+        location = s.location
+        return lookText(s)
+      }
+    }
+    return "Can't go that way"
+  }
 
   const connTexts = (from: uuidv1) : string[] => {
     return Object.values(connections).filter(c=>c.from==from).map(c=>c.text)
   }
 
-  const doCommand = (command:string):string => {
-    switch(command) {
-      case "?":
-      case "help":
-        return "You can type the cardinal directions to move around\nType 'look' to see what's in the space\nType 'story' to remember the backstory of this realm\nType 'awaken' to wake from your dreaming\n"
-      case "story":
-        return $state.story
-      case "look":
-        return currentSpace.text+"\n"+connTexts(currentSpace.id).join("\n")
-      case "hack":
-        return `You are at: ${location.x},${location.y}\nSpace details: ${JSON.stringify(currentSpace)}`
-      case "awaken":
-      case "wake":
-      case "wakeup":
-        dream(false)
-        return "you have awoken from the dreaming in "+$state.name
-      case "dream":
-        dream(true)
+  const helpCmd = () => {
+    let help =`Type 'look' to see what's in the space.
+Type 'story' to remember the backstory of this realm.
+Type 'awaken' to wake from your dreaming
+`
+    switch ($state.topology) {
+      case Topology.Rhyzome:
+        help += `You can type 'left' or 'right', 'down' or 'up' to move between spaces.\n`
+        break;
+      case Topology.Line:
+        help += `You can type 'next' or 'previous' to move between spaces.\n`
+        break;
+      case Topology.Plane:
+        help += "You can type the cardinal directions to move around.\n"
+        break;
+    }
+    return help
+  }
+  const wakeCmd = ()=>{
+    dream(false)
+    return "you have awoken from the dreaming in "+$state.name
+  }
+  const baseCommands = {
+    '?':helpCmd,
+    'help':helpCmd,
+    'h':helpCmd,
+    'wake':wakeCmd,
+    'awake':wakeCmd,
+    'waken':wakeCmd,
+    'wakeup':wakeCmd,
+    'hack':()=>{return `You are at: ${location.x},${location.y}\nSpace details: ${JSON.stringify(currentSpace)}`},
+    'dream':()=>{dream(true)
         return "you slip into dreaming about the realm of "+$state.name
-      case "n": 
-      case "north":
-        return moveTo(location.x,location.y-1)
-      case "s": 
-      case "south":
-        return moveTo(location.x,location.y+1)
-      case "e":
-      case "east":
-        return moveTo(location.x+1,location.y)
-      case "w":
-      case "west":
-        return moveTo(location.x-1,location.y)
-      default: return `I don't understand "${command}"`
-    }    
+    },
+    'look':()=>{return lookText(currentSpace)}
+  }
+  const rhyzomeCommands = {
+    "l":()=>{return moveTo(-1,1)},
+    "left":()=>{return moveTo(-1,1)},
+    "r":()=>{return moveTo(1,1)},
+    "right":()=>{return moveTo(1,1)},
+    "u":()=>{return moveUp()},
+    "up":()=>{return moveUp()},
+    "d":()=>{return moveTo(0,1)},
+    "down":()=>{return moveTo(0,1)},
+  }
+  const planeCommands = {
+    "n":()=>{return moveTo(0,-1)},
+    "north":()=>{return moveTo(0,-1)},
+    "s":()=>{return moveTo(0,1)},
+    "south":()=>{return moveTo(0,1)},
+    "e":()=>{return moveTo(-1,0)},
+    "east":()=>{return moveTo(-1,0)},
+    "w":()=>{return moveTo(1,0)},
+    "west":()=>{return moveTo(1,0)},
+  }
+  const lineCommands = {
+    "p":()=>{return moveTo(0,-1)},
+    "prev":()=>{return moveTo(0,-1)},
+    "previous":()=>{return moveTo(0,-1)},
+    "n":()=>{return moveTo(0,1)},
+    "next":()=>{return moveTo(0,1)},
+  }
+  const doCommand = (command:string):string => {
+    let cmd = baseCommands[command]
+    if (cmd) {
+      return cmd()
+    }
+    switch ($state.topology) {
+      case Topology.Rhyzome:
+        cmd = rhyzomeCommands[command]
+        break;
+      case Topology.Line:
+        cmd = lineCommands[command]
+        break;
+      case Topology.Plane:
+        cmd = planeCommands[command]
+        break;
+    }
+    if (cmd) {
+      return cmd()
+    }
+    return `I don't understand "${command}"`
   }
 const dream = (state) =>{
   dreaming = state
@@ -220,10 +288,10 @@ const updateSpace = (name:string, text:string, props:any) => {
     } else {
       let changes = []
       if (space.name != name) {
-        changes.push({ type: "update-space-name", id: space.id, text: text })
+        changes.push({ type: "update-space-name", id: space.id, name })
       }
       if (space.text != text) {
-        changes.push({ type: "update-space-text", id: space.id, text: text })
+        changes.push({ type: "update-space-text", id: space.id, text })
       }
       console.log("space.props", space.props, "props", props)
       if (!isEqual(space.props, props)) {
@@ -262,7 +330,7 @@ const updateSpace = (name:string, text:string, props:any) => {
         </Button> 
       </div>
     </div>
-    <Map topology={$state.topology} spaces={spaces} connections={connections} connect={connect} edit={editSpace}></Map>
+    <Map topology={$state.topology} location={location} spaces={spaces} connections={connections} connect={connect} edit={editSpace}></Map>
   
     {#if creatingSpace}
     <SpaceEditor spaces={spaces} handleSave={createSpace} {cancelEdit} bind:active={creatingSpace} x={createX} y={createY}

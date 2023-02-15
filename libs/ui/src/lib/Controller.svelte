@@ -48,6 +48,7 @@
       );
       return store
     }
+
   </script>
    
   <svelte:head>
@@ -63,7 +64,7 @@
           <p>
           The <a href="https://docs.google.com/document/d/1HBNgIooElD5widCuX9XmiOzbVIpEF5XXH67mZbnUFjo">Players of Ludos</a> had a game they played that involved creating fictional realms.
           These realms were crafted by the players who took turns writing new spaces one-by-one and adding them to the previous ones creating a kind of map, that other players
-          could then wander through and read, almost as novel...
+          could then wander through and read, almost as it were a novel...
           </p>
           <p>
             But the Players of Ludos were very concious that narrative forms construct particular realities, so part of their play involved conciously

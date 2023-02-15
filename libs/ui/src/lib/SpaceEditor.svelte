@@ -29,12 +29,15 @@
 
 <Dialog persistent bind:active width={600}>
 <div class='space-editor'>
-  <div class="dialog-title">Edit Space</div>
-  <div class="header">
+  <div class="dialog-title">
+    <span>Edit Space</span>
     <div class="header-items">
-    x:{x} 
-    y:{y}
-    </div>
+      x:{x} 
+      y:{y}
+      </div>
+  </div>
+  <div class="header">
+   
   </div>
 
   <div class="space-elements">
@@ -48,14 +51,14 @@
   </div>
   <div class='controls'>
     {#if handleDelete}
-      <Button text size="x-small" on:click={handleDelete} class="red white-text">
+      <Button size="small" on:click={handleDelete} class="red white-text">
         Delete
       </Button>
     {/if}
-    <Button style="margin-left:5px" size="x-small" on:click={cancelEdit}>
+    <Button style="margin-left:5px" size="small" on:click={cancelEdit}>
       Cancel
     </Button>
-    <Button style="margin-left:5px" size="x-small" RealmTypeclass="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
+    <Button style="margin-left:5px" size="small" RealmTypeclass="primary-color" on:click={() => handleSave(name, text, props, x, y, connections) }>
       Save
     </Button>
   </div>
@@ -63,19 +66,30 @@
 </Dialog>
 
 <style>
+  :global(.dialog-title) {
+    display: flex;
+    justify-content: space-between;
+    font-size: 110%;
+    font-weight: bold;
+    border-bottom: solid 1px gray;
+    margin-bottom: 12px;
+    margin-left: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-right: -20px;
+    margin-top: -20px;
+    padding-top: 12px;
+  }
   .space-editor {
     display: flex;
     height: 500px;
-    margin: 10px;
-    padding: 10px;
-    font-size: 12px;
+    margin: 20px;
     flex-direction: column;
   }
-  .header {
-    display: flex;
-    justify-content: flex-end;
-  }
   .header-items {
+    display: flex;
+    font-size: 85%;
+    font-weight: normal;
   }
   .space-elements {
     display: flex;

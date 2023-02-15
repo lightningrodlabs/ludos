@@ -38,18 +38,6 @@
 </Dialog>
 
 <style>
-  :global(.dialog-title) {
-    font-size: 110%;
-    font-weight: bold;
-    border-bottom: solid 1px gray;
-    margin-bottom: 12px;
-    margin-left: -20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-right: -20px;
-    margin-top: -20px;
-    padding-top: 12px;
-  }
   .row {
     display: flex;
     align-items: center;

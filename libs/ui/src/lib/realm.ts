@@ -62,10 +62,15 @@ export type RealmDelta =
       id: uuidv1;
       props: Object;
     }
-  | {
+    | {
       type: "update-space-text";
       id: uuidv1;
       text: string;
+    }
+    | {
+      type: "update-space-name";
+      id: uuidv1;
+      name: string;
     }
   | {
       type: "update-space-location";
@@ -123,6 +128,11 @@ export const realmGrammar: RealmGrammar = {
     }
     else if (delta.type == "add-space") {
       state.spaces[delta.value.id] = delta.value
+    }
+    else if (delta.type == "update-space-name") {
+      if (state.spaces[delta.id] !== undefined) {
+        state.spaces[delta.id].name = delta.name
+      }
     }
     else if (delta.type == "update-space-text") {
       if (state.spaces[delta.id] !== undefined) {

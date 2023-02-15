@@ -8,6 +8,7 @@
   export let connect: (from:uuidv1, x:number, y:number)=> void
   export let edit: (id:uuidv1)=>void
   export let topology
+  export let location:Location|undefined = undefined
   
   let selectedElement = undefined
   let scale: number = 1.0
@@ -111,7 +112,7 @@
         cx="{space.location.x*100}" 
         cy="{space.location.y*100}" r="40"
         class="space"
-        class:selected-space={selectedElement == space.id} 
+        class:selected-space={location !== undefined && location.x == space.location.x && location.y == space.location.y} 
         on:click={()=>{
           edit(space.id)
           //electedElement = selectedElement == space.id ? undefined : space.id
