@@ -17,19 +17,13 @@ or, to install manually with a webhapp file:
 
 ## Dev Environment Setup
 
-1. Install the holochain dev environment (only nix-shell is required): https://developer.holochain.org/docs/install/
-2. Enable Holochain cachix with:
+1. Install the holochain dev environment: https://developer.holochain.org/quick-start/
+
+2. Clone this repo and `cd` inside of it.
+3. Enter the nix shell by running this in the root folder of the repository: 
 
 ```bash
-nix-env -iA cachix -f https://cachix.org/api/v1/install
-cachix use holochain-ci
-```
-
-3. Clone this repo and `cd` inside of it.
-4. Enter the nix shell by running this in the root folder of the repository: 
-
-```bash
-nix-shell
+nix develop
 npm install
 ```
 
