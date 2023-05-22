@@ -82,9 +82,8 @@
           <p>
             Click on the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> above to create your first realm.
 
-            Click on the circle to edit the description of the space.  You can type in the terminal to begin your dreaming, 
-            or if you are clicky type person who remains awake and crafting, 
-            then click on the blue connection dots to create connections to adjacent spaces (don't forget to edit the connection text in originating space too!)
+            A circle represents a space in the realm.  Double-click on a space to edit it.  
+            Click on the blue connection dots to create new a new adjacent space (don't forget to edit the connection text in originating space too!)
             Soon you will have crafted an entire realm to share!
           </p>
           <p>
