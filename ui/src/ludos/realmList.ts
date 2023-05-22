@@ -271,6 +271,15 @@ export class RealmList {
                         
                 })
             }
+            if (options.connections) {
+                Object.values(options.connections).forEach((connection)=>{
+                    changes.push({
+                        type: "add-connection",
+                        connection: connection
+                    })
+                        
+                })
+            }
             if (changes.length > 0) {
                 workspaceStore.requestChanges(changes)
                 await workspaceStore.commitChanges()

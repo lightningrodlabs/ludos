@@ -16,6 +16,7 @@
         if (realm) {
             const state = realm.state()
             editName = state.name
+            editStory = state.story
         } else {
             console.log("realm not found:", realmHash)
         }
@@ -26,12 +27,20 @@
 
     const store:LudosStore = getStore();
 
-    const updateRealm = (hash: EntryHashB64) => async (_topology:Topology, name: string) => {
+    const updateRealm = (hash: EntryHashB64) => async (_topology:Topology, name: string, story: string) => {
         // ignore realm type we don't update that.
         const realm: Realm | undefined = await store.realmList.getRealm(hash)
         if (realm) {
         let changes = []
         const state: RealmState = realm.state()
+        if (state.story != story) {
+            changes.push(
+            {
+                type: 'set-story',
+                story: story
+            })
+
+        }
         if (state.name != name) {
             store.realmList.requestChanges([
             {

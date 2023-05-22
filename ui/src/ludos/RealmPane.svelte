@@ -44,13 +44,12 @@
   $: currentSpace = findSpace(location.x, location.y ,spaces)
 
   onMount(async () => {
-    if (currentSpace) {
-      terminal.addToScreen("")
-      terminal.addToScreen($state.story)
-      terminal.addToScreen("")
-  		terminal.addToScreen(lookText(currentSpace))
-    }
-    terminal.focus()
+    // if (currentSpace) {
+    //   terminal.addToScreen("")
+    //   terminal.addToScreen($state.story)
+    //   terminal.addToScreen("")
+  	// 	terminal.addToScreen(lookText(currentSpace))
+   // terminal.focus()
 	});
   const exportRealm = (state: RealmState) => {
         const fileName = `ts_${state.name}.json`
@@ -159,7 +158,7 @@
     tsStore.realmList.closeActiveRealm();
   };
   const lookText = (s:Space) => {
-    return (s.text?s.text:s.name)+"\n" + connTexts(s.id).join("\n")
+    return (s.text?s.text:s.name)+"\n\n" + connTexts(s.id).join("\n\n")
   }
   const moveTo = (x,y) => {
     x = location.x+x
@@ -285,7 +284,7 @@ const deleteSpace = () => {
     dispatch("requestChange", [{ type: "delete-space", editingSpaceId }]);
     cancelEdit()
 }
-const updateSpace = (name:string, text:string, props:any) => {
+const updateSpace = (name:string, text:string, props:any, x:number, y:number, connections:Connection[]) => {
     const space = spaces[editingSpaceId];
     if (!space) {
       console.error("Failed to find item with id", editingSpaceId);
@@ -300,6 +299,10 @@ const updateSpace = (name:string, text:string, props:any) => {
       console.log("space.props", space.props, "props", props)
       if (!isEqual(space.props, props)) {
         changes.push({ type: "update-space-props", id: space.id, props: cloneDeep(props)})
+      }
+      if (connections) {
+        console.log("conn", connections)
+        changes.push({ type: "set-connections", id: space.id, connections })
       }
       if (changes.length > 0) {
       dispatch("requestChange", changes);
@@ -358,7 +361,7 @@ const updateSpace = (name:string, text:string, props:any) => {
   {/if}
   {#if dreaming}
     <div  transition:fade>
-      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)\n\n${$state.story}`} doCommand={doCommand} fullscreen={true}/>
+      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)\n\n${$state.story}\n\n${lookText(currentSpace)}`} doCommand={doCommand} fullscreen={true}/>
     </div>
   {/if}
 

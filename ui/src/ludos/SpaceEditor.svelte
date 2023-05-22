@@ -21,7 +21,7 @@
     if (e.key === "Escape") {
       active=false
     } else if (e.key === "Enter" && e.ctrlKey) {
-      handleSave(name, text, props, x, y)
+      handleSave(name, text, props, x, y, connections)
     }
   }
 </script>

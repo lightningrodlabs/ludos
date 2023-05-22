@@ -184,6 +184,13 @@
           //electedElement = selectedElement == space.id ? undefined : space.id
           } }
         />
+        <text font-size="12"
+                      x={space.location.x*100-40} y={space.location.y*100+5} >
+                      {#each space.name.split(/ /) as word,i}
+                      <tspan x={space.location.x*100-25} y={space.location.y*100+(space.name.split(/ /).length)*7-11*(space.name.split(/ /).length -i)}>{word} </tspan>
+                      {/each}
+                      </text>
+
         <!-- {#if location !== undefined && location.x == space.location.x && location.y == space.location.y}
           <text 
           style="cursor:pointer"

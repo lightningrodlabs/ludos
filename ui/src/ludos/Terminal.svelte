@@ -16,19 +16,24 @@
   export let fullscreen = false
 
   onMount(async () => {
-		addToScreen(welcome)
+		await addToScreen(welcome)
     focus()
 	});
-  export const addToScreen = (text:string) => {
-    screen.innerHTML+= text+"\n"
+  export const addToScreen = async (text:string) => {
+    const x = text.split('')
+    for (const char of x) {
+      screen.innerHTML+= char
+      await new Promise(r => setTimeout(r, 1));
+      }
+    screen.innerHTML+= "\n"
     screen.scrollTo(0, screen.scrollHeight)
   }
   export const focus = () => {
     input.focus()
   }
-  const doChange = (e) => {
-    addToScreen(PROMPT+" "+input.value)
-    addToScreen(doCommand(input.value))
+  const doChange = async (e) => {
+    await addToScreen(PROMPT+" "+input.value)
+    await addToScreen(doCommand(input.value))
     input.value = ""
   }
   let input
@@ -38,7 +43,8 @@
 
 <div class="term {fullscreen?"fullscreen crt":''}" style="{cssVarStyles}">
   <pre bind:this={screen} class="text screen"
-   on:mousedown={e=>e.preventDefault()}></pre>
+   on:mousedown={e=>e.preventDefault()}
+   on:click={(e)=>{e.preventDefault();e.stopImmediatePropagation()}}></pre>
   <div class="cmd">
     <span class="text">{PROMPT}</span>&nbsp;
     <input bind:this={input} class="text cmd-input" on:change={doChange}>

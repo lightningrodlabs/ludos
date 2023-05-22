@@ -89,6 +89,10 @@ export type RealmDelta =
       type: "add-connection";
       connection: Connection;
     }
+    | {
+      type: "set-connections";
+      connections: Connection[];
+    }
   | {
       type: "delete-connection";
       id: string;
@@ -157,6 +161,11 @@ export const realmGrammar: RealmGrammar = {
     }
     else if (delta.type == "delete-connection") {
       delete state.connections[delta.id]
+    }
+    else if (delta.type == "set-connections") {
+      for (const c of delta.connections) {
+        state.connections[c.id] = c
+      }
     }
   },
 };
