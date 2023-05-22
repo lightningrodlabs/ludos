@@ -20,6 +20,8 @@
 
     const selectRealm = (hash: EntryHashB64) => {
         store.realmList.setActiveRealm(hash)
+        store.setUIprops({dreaming: true})
+
     }
 
     let fileinput;
@@ -50,7 +52,7 @@
             {#if $activeHash}
                 {$state.name}
             {:else}
-                <i>Choose a Realm</i>
+                <i>Enter a Realm</i>
             {/if}
             <Icon path={mdiChevronDown}></Icon>
         </Button>

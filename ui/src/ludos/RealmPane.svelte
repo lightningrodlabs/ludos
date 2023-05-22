@@ -32,8 +32,10 @@
 
   let location={x:0,y:0,z:0}
   let terminal
-  let dreaming = false
   let dispatch = createEventDispatcher()
+
+  $: uiProps = tsStore.uiProps
+  $: dreaming = $uiProps.dreaming
 
   $: activeHash = tsStore.realmList.activeRealmHash;
   $: state = tsStore.realmList.getReadableRealmState($activeHash);
@@ -127,6 +129,7 @@
     location.x = createX
     location.y = createY
     creatingSpace = false
+    tsStore.setUIprops({dreaming:false})
   }
 
   const clearEdit = () => {
@@ -192,7 +195,7 @@
   const helpCmd = () => {
     let help =`Type 'look' to see what's in the space.
 Type 'story' to remember the backstory of this realm.
-Type 'awaken' to wake from your dreaming
+Type 'wake' to wake from your dreaming
 `
     switch ($state.topology) {
       case Topology.Rhyzome:
@@ -216,9 +219,10 @@ Type 'awaken' to wake from your dreaming
     'help':helpCmd,
     'h':helpCmd,
     'wake':wakeCmd,
-    'awake':wakeCmd,
+    'awaken':wakeCmd,
     'waken':wakeCmd,
     'wakeup':wakeCmd,
+    'story':()=>{return $state.story},
     'hack':()=>{return `You are at: ${location.x},${location.y}\nSpace details: ${JSON.stringify(currentSpace)}`},
     'dream':()=>{dream(true)
         return "you slip into dreaming about the realm of "+$state.name
@@ -240,10 +244,10 @@ Type 'awaken' to wake from your dreaming
     "north":()=>{return moveTo(0,-1)},
     "s":()=>{return moveTo(0,1)},
     "south":()=>{return moveTo(0,1)},
-    "e":()=>{return moveTo(-1,0)},
-    "east":()=>{return moveTo(-1,0)},
-    "w":()=>{return moveTo(1,0)},
-    "west":()=>{return moveTo(1,0)},
+    "e":()=>{return moveTo(1,0)},
+    "east":()=>{return moveTo(1,0)},
+    "w":()=>{return moveTo(-1,0)},
+    "west":()=>{return moveTo(-1,0)},
   }
   const lineCommands = {
     "p":()=>{return moveTo(0,-1)},
@@ -274,7 +278,7 @@ Type 'awaken' to wake from your dreaming
     return `I don't understand "${command}"`
   }
 const dream = (state) =>{
-  dreaming = state
+  tsStore.setUIprops({dreaming: state})
 }
 let editing = false
 const deleteSpace = () => {
@@ -354,12 +358,7 @@ const updateSpace = (name:string, text:string, props:any) => {
   {/if}
   {#if dreaming}
     <div  transition:fade>
-      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={true}/>
-    </div>
-  {:else}
-    <div id="dreaming-preview" transition:fade>
-      Dreaming preview: 
-      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)`} doCommand={doCommand} fullscreen={false} fontSize={"14px"} maxHeight={"200px"}/>
+      <Terminal bind:this={terminal} welcome={`Welcome to the realm of ${$state.name} (type ? for help)\n\n${$state.story}`} doCommand={doCommand} fullscreen={true}/>
     </div>
   {/if}
 

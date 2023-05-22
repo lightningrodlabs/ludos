@@ -94,15 +94,38 @@
       {/if}
       {#if realmList && $realmList.realms.length > 0 && $activeRealmIndex === undefined}
         <div class="welcome-text" transition:fade>
-          <p>Active Realms: {activeRealms.length}, Archived Realms: {archivedRealms.length}</p>
+
+          <p>
+            The <a href="https://docs.google.com/document/d/1HBNgIooElD5widCuX9XmiOzbVIpEF5XXH67mZbnUFjo">Players of Ludos</a> had a game they played that involved creating fictional realms.
+            These realms were crafted by the players who took turns writing new spaces one-by-one and adding them to the previous ones creating a kind of map, that other players
+            could then wander through and read, almost as it were a novel...
+            </p>
+            <p>
+              But the Players of Ludos were very concious that narrative forms construct particular realities, so part of their play involved conciously
+              choosing different narrative topologies for thier stories.  Some of them were linear, like most of our novels, but some of them spread
+              across a narrative plane that one could wander like a landspace, and others grew like roots into a the soil of story.
+            </p>
+            <p>
+              The players considered their play, like our living, a kind of dreaming.  And so when they were crafting new games they felt themselves to be awake.
+            </p>
+            <p>      
+            So, here, dear players, we offer you the chance to join into this long lost game-form. 
+            To craft realms of story.
+            To shift between the dreaming and the waking. 
+            </p>
+            <hr>
+            <p></p>
+            <p>Active Realms: {activeRealms.length}, Archived Realms: {archivedRealms.length}</p>
             <p>
               Select a realm from the dropdown above, or add a new one with the  <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> button.
             </p>
 
           <p>You can always edit these settings with the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiCog}></Icon> button in the upper right when you have a realm selected. </p>
           <p>Any realms that you have archived will appear under the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiArchiveArrowUp}></Icon> button, and you can un-archive them by selecting them from the list.</p>
-        </div>
-      {/if}
+          
+          </div>
+
+        {/if}
 
       {#if $activeRealmIndex !== undefined}
           <div transition:fade>

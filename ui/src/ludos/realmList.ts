@@ -263,7 +263,7 @@ export class RealmList {
                 })
             }
             if (options.spaces) {
-                options.spaces.forEach((space)=>{
+                Object.values(options.spaces).forEach((space)=>{
                     changes.push({
                         type: "add-space",
                         value: space

@@ -200,3 +200,8 @@ export class Realm {
         this.workspace.commitChanges()
     }
 }
+
+
+export interface UIProps {
+  dreaming: boolean
+}

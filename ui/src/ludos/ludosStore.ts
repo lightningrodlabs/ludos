@@ -8,8 +8,8 @@ import {
   } from '@holochain/client';
 import type { RecordBag } from '@holochain-open-dev/utils';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
-import { get } from "svelte/store";
-import { CommitTypeRealm } from './realm';
+import { get, writable, type Writable } from "svelte/store";
+import { CommitTypeRealm, type UIProps } from './realm';
 import { RealmList, CommitTypeRealmList } from './realmList';
 import { decode } from '@msgpack/msgpack';
 
@@ -37,6 +37,17 @@ export class LudosStore {
     updating = false
     synStore: SynStore;
     client: AppAgentClient;
+    uiProps: Writable<UIProps> = writable({
+        dreaming: true,
+      })
+    
+    setUIprops(props:{}) {
+    this.uiProps.update((n) => {
+        Object.keys(props).forEach(key=>n[key] = props[key])
+        return n
+    })
+    }
+    
     myAgentPubKey(): AgentPubKeyB64 {
         return encodeHashToBase64(this.client.myPubKey);
     }

@@ -37,7 +37,8 @@
 </script>
 
 <div class="term {fullscreen?"fullscreen crt":''}" style="{cssVarStyles}">
-  <pre bind:this={screen} class="text screen"></pre>
+  <pre bind:this={screen} class="text screen"
+   on:mousedown={e=>e.preventDefault()}></pre>
   <div class="cmd">
     <span class="text">{PROMPT}</span>&nbsp;
     <input bind:this={input} class="text cmd-input" on:change={doChange}>
