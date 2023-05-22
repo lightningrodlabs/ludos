@@ -1,11 +1,20 @@
 [workspace]
 resolver = "2"
-members = [
-  "libs/zomes/*",
-]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
 
 [profile.dev]
 opt-level = "z"
 
 [profile.release]
 opt-level = "z"
+
+[workspace.dependencies]
+hdi = "=0.2.1"
+hdk = "=0.1.1"
+serde = "1"
+
+[workspace.dependencies.syn]
+path = "dnas/ludos/zomes/coordinator/syn"
+
+[workspace.dependencies.syn_integrity]
+path = "dnas/ludos/zomes/integrity/syn"

@@ -1584,7 +1584,9 @@ dependencies = [
  "chrono",
  "derive_more",
  "hc_zome_syn_coordinator",
+ "hdk",
  "serde",
+ "syn_integrity",
 ]
 
 [[package]]
@@ -1605,6 +1607,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "hc_zome_syn_integrity",
+ "hdi",
  "serde",
 ]
 

@@ -27,19 +27,27 @@ nix develop
 npm install
 ```
 
-## Dev mode
+## Dev mode: hc launch
 
 1. Run the app
   ```bash
   npm run start
   ```
 
-2. Navigate to [localhost:5000](http://localhost:5000) in your browser. You should see the UI running.
+This will open a browser with the plaground and two `hc launch` windows with the app running.
+
+
+## Dev mode: browser
+
+1. Run the app
+  ```bash
+  npm run dev
+  ```
+
+2. Navigate to [localhost:5000](http://localhost:8888) in your browser. You should see the UI running.
 
 
 ## Releasing (manual)
 
-### For Launcher
-
-`npm run package:launcher`
-the `*.webhapp` file will be available in the `apps/launcher/workdir` folder.
+`npm run package`
+the `*.webhapp` file will be available in the `/workdir` folder.

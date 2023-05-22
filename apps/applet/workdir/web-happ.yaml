@@ -1,7 +1,0 @@
----
-manifest_version: "1"
-name: ludos
-ui:
-  bundled: "../ui/ui.zip"
-happ_manifest:
-  bundled: "./ludos.happ"
